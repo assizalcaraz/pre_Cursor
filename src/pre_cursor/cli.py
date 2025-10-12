@@ -219,7 +219,7 @@ def info(examples):
     ℹ️ Información sobre Pre-Cursor
     """
     console.print(Panel.fit(
-        "[bold blue]🚀 Pre-Cursor v1.0.0[/bold blue]\n\n"
+        "[bold blue]🚀 Pre-Cursor v1.0.1[/bold blue]\n\n"
         "Generador de proyectos optimizado para agentes de IA\n"
         "Crea estructuras completas con metodología establecida\n\n"
         "[bold green]Características:[/bold green]\n"
