@@ -250,10 +250,15 @@ def _get_default_project_path(project_name):
     home = os.path.expanduser("~")
     current_dir = os.getcwd()
     
+    # Priorizar el directorio actual como primera opción
+    if os.access(current_dir, os.W_OK):
+        return os.path.join(current_dir, project_name)
+    
     # Si estamos en el directorio pre_Cursor, usar directorio padre
     if current_dir.endswith('pre_Cursor') or current_dir.endswith('pre-cursor'):
         parent_dir = os.path.dirname(current_dir)
-        return os.path.join(parent_dir, project_name)
+        if os.access(parent_dir, os.W_OK):
+            return os.path.join(parent_dir, project_name)
     
     # Intentar directorios comunes de proyectos
     possible_paths = [
@@ -261,8 +266,7 @@ def _get_default_project_path(project_name):
         os.path.join(home, "Documents", "Projects"),
         os.path.join(home, "Projects"),
         os.path.join(home, "Developer"),
-        os.path.join(home, "Documents"),
-        current_dir
+        os.path.join(home, "Documents")
     ]
     
     for path in possible_paths:
@@ -353,8 +357,31 @@ def _interactive_create(project_name, path, force=False):
     
     # Determinar ruta del proyecto
     if not path:
-        default_path = _get_default_project_path(project_name)
-        path = Prompt.ask("Ruta del proyecto", default=default_path)
+        # Mostrar opciones de ruta con directorio actual como primera opción
+        current_dir = os.getcwd()
+        project_path_current = os.path.join(current_dir, project_name)
+        
+        console.print(f"\n📍 Selecciona la ubicación del proyecto:")
+        console.print(f"  1. [bold green]Directorio actual[/bold green] - {project_path_current}")
+        console.print(f"  2. [bold blue]Desktop[/bold blue] - {os.path.join(os.path.expanduser('~'), 'Desktop', project_name)}")
+        console.print(f"  3. [bold blue]Documents/Projects[/bold blue] - {os.path.join(os.path.expanduser('~'), 'Documents', 'Projects', project_name)}")
+        console.print(f"  4. [bold blue]Developer[/bold blue] - {os.path.join(os.path.expanduser('~'), 'Developer', project_name)}")
+        console.print(f"  5. [bold yellow]Personalizada[/bold yellow] - Especificar ruta manualmente")
+        
+        choice = Prompt.ask("Selecciona una opción", default="1")
+        
+        if choice == "1":
+            path = project_path_current
+        elif choice == "2":
+            path = os.path.join(os.path.expanduser('~'), 'Desktop', project_name)
+        elif choice == "3":
+            path = os.path.join(os.path.expanduser('~'), 'Documents', 'Projects', project_name)
+        elif choice == "4":
+            path = os.path.join(os.path.expanduser('~'), 'Developer', project_name)
+        elif choice == "5":
+            path = Prompt.ask("Ingresa la ruta completa del proyecto", default=project_path_current)
+        else:
+            path = project_path_current
     
     # Verificar si el directorio ya existe
     if os.path.exists(path) and not force:
