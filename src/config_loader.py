@@ -229,10 +229,27 @@ class ConfigLoader:
         test_deps = dependencies.get("testing", [])
         opt_deps = dependencies.get("optional", [])
         
-        def format_dependencies(deps: list) -> str:
+        project_type = config.get("project_type", "Python Library")
+        
+        def format_dependencies(deps: list, project_type: str = "Python Library") -> str:
             if not deps:
+                if project_type == "Node.js Project":
+                    return '"express": "^4.18.0"'
                 return "# Dependencias principales\n# Añadir según necesidades"
-            return "# Dependencias principales\n" + "\n".join(deps)
+            
+            if project_type == "Node.js Project":
+                # Formatear como JSON válido para Node.js
+                formatted_deps = []
+                for dep in deps:
+                    if ">=" in dep:
+                        name, version = dep.split(">=")
+                        formatted_deps.append(f'    "{name.strip()}": "^{version.strip()}"')
+                    else:
+                        formatted_deps.append(f'    "{dep.strip()}": "^1.0.0"')
+                return ",\n".join(formatted_deps)
+            else:
+                # Formatear como comentarios para Python
+                return "# Dependencias principales\n" + "\n".join(deps)
         
         return {
             # Información básica
@@ -256,7 +273,7 @@ class ConfigLoader:
             "FECHA_ACTUALIZACION": fecha_actual,
             
             # Información técnica específica
-            "MODULO_PRINCIPAL": project_name.lower().replace("-", "_").replace(" ", "_"),
+            "MODULO_PRINCIPAL": self._get_module_name(project_name, config.get("project_type", "Python Library")),
             "CLASE_PRINCIPAL": self._to_pascal_case(project_name),
             "ESTADO_INICIAL": "Fase inicial - Configuración",
             
@@ -271,11 +288,24 @@ class ConfigLoader:
             "CONFIGURACION_EJEMPLO": f"# Configuración para {project_name}\nDEBUG = True\nLOG_LEVEL = 'INFO'",
             
             # Dependencias
-            "DEPENDENCIAS_PRINCIPALES": format_dependencies(main_deps),
-            "DEPENDENCIAS_DESARROLLO": format_dependencies(dev_deps),
-            "DEPENDENCIAS_TESTING": format_dependencies(test_deps),
-            "DEPENDENCIAS_OPCIONALES": format_dependencies(opt_deps),
+            "DEPENDENCIAS_PRINCIPALES": format_dependencies(main_deps, project_type),
+            "DEPENDENCIAS_DESARROLLO": format_dependencies(dev_deps, project_type),
+            "DEPENDENCIAS_TESTING": format_dependencies(test_deps, project_type),
+            "DEPENDENCIAS_OPCIONALES": format_dependencies(opt_deps, project_type),
+            
+            # Campos adicionales para Node.js
+            "PALABRAS_CLAVE": config.get("keywords", "nodejs, javascript, api"),
+            "NODE_VERSION": config.get("node_version", "18.0.0"),
         }
+    
+    def _get_module_name(self, project_name: str, project_type: str) -> str:
+        """Obtener nombre del módulo según el tipo de proyecto."""
+        if project_type == "Node.js Project":
+            # Para Node.js mantener guiones
+            return project_name.lower()
+        else:
+            # Para Python y C++ usar guiones bajos
+            return project_name.lower().replace("-", "_").replace(" ", "_")
     
     def _to_pascal_case(self, text: str) -> str:
         """Convertir texto a PascalCase."""

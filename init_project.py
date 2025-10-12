@@ -42,14 +42,23 @@ class ProjectGenerator:
         """Configurar sistema de logging."""
         log_level = logging.DEBUG if self.verbose else logging.INFO
         
+        # Configurar logging básico
         logging.basicConfig(
             level=log_level,
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
             handlers=[
-                logging.StreamHandler(sys.stdout),
-                logging.FileHandler('project_generator.log', mode='a')
+                logging.StreamHandler(sys.stdout)
             ]
         )
+        
+        # Añadir handler de archivo solo si no estamos en modo test
+        if not hasattr(self, '_test_mode'):
+            try:
+                file_handler = logging.FileHandler('project_generator.log', mode='a')
+                logging.getLogger().addHandler(file_handler)
+            except (OSError, PermissionError):
+                # Si no se puede crear el archivo de log, continuar sin él
+                pass
         
         self.logger = logging.getLogger(__name__)
         self.logger.info("Sistema de logging configurado")
@@ -147,7 +156,7 @@ class ProjectGenerator:
             "FECHA_ACTUALIZACION": fecha_actual,
             
             # Información técnica específica
-            "MODULO_PRINCIPAL": nombre_proyecto.lower().replace("-", "_").replace(" ", "_"),
+            "MODULO_PRINCIPAL": self._get_module_name(nombre_proyecto, tipo_proyecto),
             "CLASE_PRINCIPAL": self._to_pascal_case(nombre_proyecto),
             "ESTADO_INICIAL": "Fase inicial - Configuración",
             
@@ -163,9 +172,13 @@ class ProjectGenerator:
             
             # Dependencias
             "DEPENDENCIAS_PRINCIPALES": self._get_dependencies_for_type(tipo_proyecto),
-            "DEPENDENCIAS_DESARROLLO": "pytest>=7.0.0\npytest-cov>=4.0.0\nblack>=22.0.0\nflake8>=5.0.0",
+            "DEPENDENCIAS_DESARROLLO": self._get_dev_dependencies_for_type(tipo_proyecto),
             "DEPENDENCIAS_TESTING": "pytest>=7.0.0\npytest-cov>=4.0.0\npytest-asyncio>=0.21.0",
             "DEPENDENCIAS_OPCIONALES": "# Dependencias opcionales\n# requests>=2.28.0\n# numpy>=1.21.0",
+            
+            # Campos adicionales para Node.js
+            "PALABRAS_CLAVE": "python, library, api",
+            "NODE_VERSION": "18.0.0",
         }
     
     def _get_validated_input(self, prompt: str, validator_func, optional: bool = False, default: str = "") -> str:
@@ -272,6 +285,22 @@ class ProjectGenerator:
                 return types[choice]
             print("❌ Opción inválida. Intenta de nuevo.")
     
+    def _get_dev_dependencies_for_type(self, project_type: str) -> str:
+        """Obtener dependencias de desarrollo según el tipo de proyecto."""
+        dev_dependencies = {
+            "Python Library": "pytest>=7.0.0\npytest-cov>=4.0.0\nblack>=22.0.0\nflake8>=5.0.0",
+            "Python CLI Tool": "pytest>=7.0.0\npytest-cov>=4.0.0\nblack>=22.0.0\nflake8>=5.0.0",
+            "Python Web App (Flask)": "pytest>=7.0.0\npytest-cov>=4.0.0\nblack>=22.0.0\nflake8>=5.0.0",
+            "Python Web App (Django)": "pytest>=7.0.0\npytest-cov>=4.0.0\nblack>=22.0.0\nflake8>=5.0.0",
+            "Python Web App (FastAPI)": "pytest>=7.0.0\npytest-cov>=4.0.0\nblack>=22.0.0\nflake8>=5.0.0",
+            "Python Data Science": "pytest>=7.0.0\npytest-cov>=4.0.0\nblack>=22.0.0\nflake8>=5.0.0",
+            "Python ML/AI": "pytest>=7.0.0\npytest-cov>=4.0.0\nblack>=22.0.0\nflake8>=5.0.0",
+            "C++ Project": "# Dependencias de desarrollo\n# gtest>=1.11.0\n# clang-format",
+            "Node.js Project": '"nodemon": "^2.0.0",\n    "jest": "^29.0.0",\n    "eslint": "^8.0.0",\n    "prettier": "^2.8.0"',
+            "Otro": "# Dependencias de desarrollo\n# Añadir según necesidades"
+        }
+        return dev_dependencies.get(project_type, dev_dependencies["Otro"])
+    
     def _get_dependencies_for_type(self, project_type: str) -> str:
         """Obtener dependencias según el tipo de proyecto."""
         dependencies = {
@@ -283,10 +312,19 @@ class ProjectGenerator:
             "Python Data Science": "# Dependencias principales\npandas>=1.5.0\nnumpy>=1.21.0\nmatplotlib>=3.5.0",
             "Python ML/AI": "# Dependencias principales\ntorch>=1.12.0\ntensorflow>=2.10.0\nscikit-learn>=1.1.0",
             "C++ Project": "# Dependencias principales\n# CMake>=3.16\n# gtest>=1.11.0",
-            "Node.js Project": "# Dependencias principales\n# express>=4.18.0\n# nodemon>=2.0.0",
+            "Node.js Project": '"express": "^4.18.0",\n    "cors": "^2.8.5"',
             "Otro": "# Dependencias principales\n# Añadir según necesidades"
         }
         return dependencies.get(project_type, dependencies["Otro"])
+    
+    def _get_module_name(self, project_name: str, project_type: str) -> str:
+        """Obtener nombre del módulo según el tipo de proyecto."""
+        if project_type == "Node.js Project":
+            # Para Node.js mantener guiones
+            return project_name.lower()
+        else:
+            # Para Python y C++ usar guiones bajos
+            return project_name.lower().replace("-", "_").replace(" ", "_")
     
     def _to_pascal_case(self, text: str) -> str:
         """Convertir texto a PascalCase."""
@@ -508,7 +546,8 @@ class ProjectGenerator:
             print("  ✅ git add .")
             
             # Commit inicial
-            commit_message = f"WIP: Proyecto {self.project_data['NOMBRE_PROYECTO']} inicializado"
+            project_name = self.project_data.get('NOMBRE_PROYECTO', 'proyecto')
+            commit_message = f"WIP: Proyecto {project_name} inicializado"
             subprocess.run(["git", "commit", "-m", commit_message], check=True, capture_output=True)
             print("  ✅ Commit inicial")
             
@@ -523,11 +562,14 @@ class ProjectGenerator:
     def create_context_file(self, project_path: Path) -> None:
         """
         Crear archivo CONTEXTO.md con información del proyecto.
-        
+
         Args:
             project_path: Ruta del proyecto
         """
         print("📄 Creando archivo de contexto...")
+
+        # Obtener nombre del módulo principal
+        module_name = self.project_data.get('MODULO_PRINCIPAL', 'main')
         
         context_content = f"""# CONTEXTO - {self.project_data['NOMBRE_PROYECTO']}
 
@@ -550,7 +592,7 @@ class ProjectGenerator:
 ├── METODOLOGIA_DESARROLLO.md   # Metodología establecida
 ├── CONTEXTO.md                 # Este archivo
 ├── src/                        # Código fuente
-│   └── {self.project_data['MODULO_PRINCIPAL']}.py
+│   └── {module_name}.py
 ├── tests/                      # Pruebas
 │   └── README.md
 ├── docs/                       # Documentación

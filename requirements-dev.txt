@@ -1,0 +1,18 @@
+# Dependencias para testing y desarrollo
+
+# Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-asyncio>=0.21.0
+
+# Configuración y validación
+PyYAML>=6.0.0
+
+# Desarrollo
+black>=22.0.0
+flake8>=5.0.0
+mypy>=1.0.0
+
+# Utilidades
+rich>=12.0.0
+click>=8.0.0
