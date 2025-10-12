@@ -182,6 +182,94 @@ class ProjectGenerator:
             # Campos adicionales para Node.js
             "PALABRAS_CLAVE": "python, library, api",
             "NODE_VERSION": "18.0.0",
+            
+            # Variables adicionales para completar placeholders
+            "TIPOS_IMPORTADOS": "List, Dict, Optional, Union",
+            "TIPO_RETORNO": "Any",
+            "TIPO_RETORNO_SECUNDARIO": "bool",
+            "TIPO_RETORNO_FUNCION": "str",
+            "METODO_PRINCIPAL": "procesar",
+            "METODO_SECUNDARIO": "validar",
+            "FUNCION_UTILITARIA": "utilidad",
+            "PARAMETROS_INIT": "config=None",
+            "PARAMETROS_METODO": "datos",
+            "PARAMETROS_METODO_SECUNDARIO": "valor",
+            "PARAMETROS_FUNCION": "entrada",
+            "IMPLEMENTACION_METODO": "pass  # Implementar lógica aquí",
+            "IMPLEMENTACION_METODO_SECUNDARIO": "return True",
+            "IMPLEMENTACION_FUNCION": 'return "resultado"',
+            "RETORNO_METODO": "None",
+            "RETORNO_METODO_SECUNDARIO": "True",
+            "RETORNO_FUNCION": '"resultado"',
+            "DESCRIPCION_CLASE_PRINCIPAL": "Clase principal del proyecto",
+            "DESCRIPCION_METODO_PRINCIPAL": "Método principal de procesamiento",
+            "DESCRIPCION_METODO_SECUNDARIO": "Método secundario de validación",
+            "DESCRIPCION_FUNCION_UTILITARIA": "Función utilitaria",
+            "DESCRIPCION_RETORNO": "Resultado del procesamiento",
+            "DESCRIPCION_RETORNO_SECUNDARIO": "Estado de la validación",
+            "DESCRIPCION_RETORNO_FUNCION": "Resultado de la función",
+            "DOCSTRING_PARAMETROS": "config: Configuración opcional",
+            "DOCSTRING_PARAMETROS_METODO": "datos: Datos a procesar",
+            "DOCSTRING_PARAMETROS_METODO_SECUNDARIO": "valor: Valor a validar",
+            "DOCSTRING_PARAMETROS_FUNCION": "entrada: Entrada a procesar",
+            "EXCEPCIONES": "ValueError",
+            "DESCRIPCION_EXCEPCIONES": "Si los datos son inválidos",
+            "ATRIBUTO_1": "config",
+            "ATRIBUTO_2": "datos",
+            "OBJETIVO_DETALLADO": "Crear una solución robusta y escalable",
+            "FUNCIONALIDAD_CORE_1": "Procesamiento de datos",
+            "FUNCIONALIDAD_CORE_2": "Validación de entrada",
+            "FUNCIONALIDAD_CORE_3": "Manejo de errores",
+            "FEATURE_1": "API REST",
+            "FEATURE_2": "Base de datos",
+            "FEATURE_3": "Autenticación",
+            "DESCRIPCION_FEATURE_1": "API REST para comunicación",
+            "DESCRIPCION_FEATURE_2": "Integración con base de datos",
+            "DESCRIPCION_FEATURE_3": "Sistema de autenticación seguro",
+            "FEATURE_ADICIONAL_1": "Logging",
+            "FEATURE_ADICIONAL_2": "Testing",
+            "DESCRIPCION_FEATURE_ADICIONAL_1": "Sistema de logging completo",
+            "DESCRIPCION_FEATURE_ADICIONAL_2": "Suite de tests automatizados",
+            "TIEMPO_RESPUESTA": "100",
+            "CRITERIO_USABILIDAD": "Interfaz intuitiva",
+            "PASO_INMEDIATO": "Configurar entorno de desarrollo",
+            "PASO_CORTO_PLAZO": "Implementar funcionalidades básicas",
+            "PASO_MEDIANO_PLAZO": "Añadir características avanzadas",
+            "BENEFICIO_1": "Fácil de usar",
+            "BENEFICIO_2": "Altamente configurable",
+            "BENEFICIO_3": "Bien documentado",
+            "OTRO_REQUISITO": "Git instalado",
+            "EJEMPLO_1_TITULO": "Uso básico",
+            "EJEMPLO_1_DESCRIPCION": "Ejemplo de uso básico del proyecto",
+            "EJEMPLO_1_CODIGO": f"from {self._get_module_name(nombre_proyecto, tipo_proyecto)} import {self._to_pascal_case(nombre_proyecto)}\ninstancia = {self._to_pascal_case(nombre_proyecto)}()\nresultado = instancia.procesar()",
+            "EJEMPLO_2_TITULO": "Configuración avanzada",
+            "EJEMPLO_2_DESCRIPCION": "Ejemplo de configuración avanzada",
+            "EJEMPLO_2_CODIGO": f"config = {{'debug': True}}\ninstancia = {self._to_pascal_case(nombre_proyecto)}(config)\nresultado = instancia.procesar()",
+            "VARIABLE_1": "DEBUG",
+            "VALOR_1": "true",
+            "VARIABLE_2": "LOG_LEVEL",
+            "VALOR_2": "INFO",
+            "PROBLEMA_1": "Error de importación",
+            "SINTOMAS_1": "ModuleNotFoundError",
+            "SOLUCION_1": "Verificar que las dependencias estén instaladas",
+            "PROBLEMA_2": "Error de configuración",
+            "SINTOMAS_2": "ConfigurationError",
+            "SOLUCION_2": "Verificar archivo de configuración",
+            "DISCORD_SERVER": "https://discord.gg/tu-servidor",
+            "OTRA_DEPENDENCIA": "requests",
+            "VERSION_MINIMA": "2.28.0",
+            "MODULO_PRINCIPAL_UPPER": self._get_module_name(nombre_proyecto, tipo_proyecto).upper(),
+            "METODO_SECUNDARIO_RETORNO": "bool",
+            "PARAMETROS_METODO_SECUNDARIO_DOC": "valor Valor a validar",
+            "DESCRIPCION_RETORNO_METODO_SECUNDARIO": "Estado de la validación",
+            "IMPLEMENTACION_METODO_PRINCIPAL": "// Implementar lógica aquí",
+            "IMPLEMENTACION_METODO_SECUNDARIO": "return true;",
+            "RETORNO_METODO_SECUNDARIO": "True",
+            "TIPO_RETORNO_METODO_SECUNDARIO": "Promise<boolean>",
+            "IMPLEMENTACION_METODO_PRINCIPAL": "// Implementar lógica aquí",
+            "IMPLEMENTACION_METODO_SECUNDARIO": "return True",
+            "RETORNO_METODO_SECUNDARIO": "True",
+            "EJEMPLO_USO_MAIN": f"# Crear instancia\ninstancia = {self._to_pascal_case(nombre_proyecto)}()\n# Usar funcionalidad\nresultado = instancia.procesar()",
         }
     
     def _get_validated_input(self, prompt: str, validator_func, optional: bool = False, default: str = "") -> str:
@@ -503,6 +591,7 @@ class ProjectGenerator:
     def _process_template(self, template_path: Path, project_path: Path) -> None:
         """
         Procesar una plantilla individual de manera optimizada.
+        Maneja ambos formatos de placeholders: $VARIABLE y {{VARIABLE}}.
         
         Args:
             template_path: Ruta de la plantilla
@@ -513,9 +602,6 @@ class ProjectGenerator:
             with open(template_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            # Usar Template para reemplazo más eficiente
-            template = Template(content)
-            
             # Preparar datos de reemplazo con valores seguros
             safe_data = {}
             for key, value in self.project_data.items():
@@ -523,14 +609,29 @@ class ProjectGenerator:
                 safe_value = str(value).replace('$', '$$')
                 safe_data[key] = safe_value
             
-            # Reemplazar placeholders de manera más eficiente
+            # Procesar formato $VARIABLE usando Template
             try:
+                template = Template(content)
                 content = template.safe_substitute(safe_data)
+                self.logger.debug(f"Procesado formato $VARIABLE en {template_path.name}")
             except KeyError as e:
-                # Fallback a método anterior si hay problemas con Template
-                for key, value in safe_data.items():
-                    placeholder = f"{{{{{key}}}}}"
+                self.logger.warning(f"Error con Template en {template_path.name}: {e}")
+            except Exception as e:
+                self.logger.warning(f"Error procesando $VARIABLE en {template_path.name}: {e}")
+            
+            # Procesar formato {{VARIABLE}} usando str.replace
+            for key, value in safe_data.items():
+                placeholder = f"{{{{{key}}}}}"
+                if placeholder in content:
                     content = content.replace(placeholder, value)
+                    self.logger.debug(f"Reemplazado {placeholder} en {template_path.name}")
+            
+            # Verificar placeholders no procesados
+            unprocessed_placeholders = self._find_unprocessed_placeholders(content)
+            if unprocessed_placeholders:
+                self.logger.warning(f"Placeholders no procesados en {template_path.name}: {unprocessed_placeholders}")
+                # Intentar reemplazar con valores por defecto
+                content = self._replace_with_defaults(content, unprocessed_placeholders)
             
             # Determinar archivo de destino
             template_name = template_path.name
@@ -549,6 +650,160 @@ class ProjectGenerator:
             
         except Exception as e:
             print(f"  ❌ Error procesando {template_path.name}: {e}")
+            self.logger.error(f"Error procesando plantilla {template_path.name}: {e}")
+    
+    def _find_unprocessed_placeholders(self, content: str) -> list:
+        """
+        Encontrar placeholders no procesados en el contenido.
+        
+        Args:
+            content: Contenido a verificar
+            
+        Returns:
+            list: Lista de placeholders no procesados
+        """
+        import re
+        
+        # Buscar formato {{VARIABLE}}
+        curly_placeholders = re.findall(r'\{\{([^}]+)\}\}', content)
+        
+        # Buscar formato $VARIABLE (que no hayan sido procesados)
+        dollar_placeholders = re.findall(r'\$([A-Z_]+)', content)
+        
+        return curly_placeholders + dollar_placeholders
+    
+    def _replace_with_defaults(self, content: str, unprocessed_placeholders: list) -> str:
+        """
+        Reemplazar placeholders no procesados con valores por defecto.
+        
+        Args:
+            content: Contenido a procesar
+            unprocessed_placeholders: Lista de placeholders no procesados
+            
+        Returns:
+            str: Contenido con placeholders reemplazados por defectos
+        """
+        # Valores por defecto para placeholders comunes
+        default_values = {
+            # Variables de tipos
+            'TIPOS_IMPORTADOS': 'List, Dict, Optional, Union',
+            'TIPO_RETORNO': 'Any',
+            'TIPO_RETORNO_SECUNDARIO': 'bool',
+            'TIPO_RETORNO_FUNCION': 'str',
+            
+            # Variables de métodos
+            'METODO_PRINCIPAL': 'procesar',
+            'METODO_SECUNDARIO': 'validar',
+            'FUNCION_UTILITARIA': 'utilidad',
+            'PARAMETROS_INIT': 'config=None',
+            'PARAMETROS_METODO': 'datos',
+            'PARAMETROS_METODO_SECUNDARIO': 'valor',
+            'PARAMETROS_FUNCION': 'entrada',
+            
+            # Variables de implementación
+            'IMPLEMENTACION_METODO': 'pass  # Implementar lógica aquí',
+            'IMPLEMENTACION_METODO_SECUNDARIO': 'return True',
+            'IMPLEMENTACION_FUNCION': 'return "resultado"',
+            'RETORNO_METODO': 'None',
+            'RETORNO_METODO_SECUNDARIO': 'True',
+            'RETORNO_FUNCION': '"resultado"',
+            
+            # Variables de documentación
+            'DESCRIPCION_CLASE_PRINCIPAL': 'Clase principal del proyecto',
+            'DESCRIPCION_METODO_PRINCIPAL': 'Método principal de procesamiento',
+            'DESCRIPCION_METODO_SECUNDARIO': 'Método secundario de validación',
+            'DESCRIPCION_FUNCION_UTILITARIA': 'Función utilitaria',
+            'DESCRIPCION_RETORNO': 'Resultado del procesamiento',
+            'DESCRIPCION_RETORNO_SECUNDARIO': 'Estado de la validación',
+            'DESCRIPCION_RETORNO_FUNCION': 'Resultado de la función',
+            'DOCSTRING_PARAMETROS': 'config: Configuración opcional',
+            'DOCSTRING_PARAMETROS_METODO': 'datos: Datos a procesar',
+            'DOCSTRING_PARAMETROS_METODO_SECUNDARIO': 'valor: Valor a validar',
+            'DOCSTRING_PARAMETROS_FUNCION': 'entrada: Entrada a procesar',
+            'EXCEPCIONES': 'ValueError',
+            'DESCRIPCION_EXCEPCIONES': 'Si los datos son inválidos',
+            
+            # Variables de atributos
+            'ATRIBUTO_1': 'config',
+            'ATRIBUTO_2': 'datos',
+            
+            # Variables de roadmap
+            'OBJETIVO_DETALLADO': 'Crear una solución robusta y escalable',
+            'FUNCIONALIDAD_CORE_1': 'Procesamiento de datos',
+            'FUNCIONALIDAD_CORE_2': 'Validación de entrada',
+            'FUNCIONALIDAD_CORE_3': 'Manejo de errores',
+            'FEATURE_1': 'API REST',
+            'FEATURE_2': 'Base de datos',
+            'FEATURE_3': 'Autenticación',
+            'DESCRIPCION_FEATURE_1': 'API REST para comunicación',
+            'DESCRIPCION_FEATURE_2': 'Integración con base de datos',
+            'DESCRIPCION_FEATURE_3': 'Sistema de autenticación seguro',
+            'FEATURE_ADICIONAL_1': 'Logging',
+            'FEATURE_ADICIONAL_2': 'Testing',
+            'DESCRIPCION_FEATURE_ADICIONAL_1': 'Sistema de logging completo',
+            'DESCRIPCION_FEATURE_ADICIONAL_2': 'Suite de tests automatizados',
+            'TIEMPO_RESPUESTA': '100',
+            'CRITERIO_USABILIDAD': 'Interfaz intuitiva',
+            'PASO_INMEDIATO': 'Configurar entorno de desarrollo',
+            'PASO_CORTO_PLAZO': 'Implementar funcionalidades básicas',
+            'PASO_MEDIANO_PLAZO': 'Añadir características avanzadas',
+            
+            # Variables de tutorial
+            'BENEFICIO_1': 'Fácil de usar',
+            'BENEFICIO_2': 'Altamente configurable',
+            'BENEFICIO_3': 'Bien documentado',
+            'OTRO_REQUISITO': 'Git instalado',
+            'EJEMPLO_1_TITULO': 'Uso básico',
+            'EJEMPLO_1_DESCRIPCION': 'Ejemplo de uso básico del proyecto',
+            'EJEMPLO_1_CODIGO': 'from proyecto import ClasePrincipal\ninstancia = ClasePrincipal()\nresultado = instancia.procesar()',
+            'EJEMPLO_2_TITULO': 'Configuración avanzada',
+            'EJEMPLO_2_DESCRIPCION': 'Ejemplo de configuración avanzada',
+            'EJEMPLO_2_CODIGO': 'config = {"debug": True}\ninstancia = ClasePrincipal(config)\nresultado = instancia.procesar()',
+            'VARIABLE_1': 'DEBUG',
+            'VALOR_1': 'true',
+            'VARIABLE_2': 'LOG_LEVEL',
+            'VALOR_2': 'INFO',
+            'PROBLEMA_1': 'Error de importación',
+            'SINTOMAS_1': 'ModuleNotFoundError',
+            'SOLUCION_1': 'Verificar que las dependencias estén instaladas',
+            'PROBLEMA_2': 'Error de configuración',
+            'SINTOMAS_2': 'ConfigurationError',
+            'SOLUCION_2': 'Verificar archivo de configuración',
+            'DISCORD_SERVER': 'https://discord.gg/tu-servidor',
+            
+            # Variables de dependencias
+            'OTRA_DEPENDENCIA': 'requests',
+            'VERSION_MINIMA': '2.28.0',
+            
+            # Variables de C++
+            'MODULO_PRINCIPAL_UPPER': self.project_data.get('MODULO_PRINCIPAL', 'main').upper(),
+            'METODO_SECUNDARIO_RETORNO': 'bool',
+            'PARAMETROS_METODO_SECUNDARIO_DOC': 'valor Valor a validar',
+            'DESCRIPCION_RETORNO_METODO_SECUNDARIO': 'Estado de la validación',
+            'IMPLEMENTACION_METODO_PRINCIPAL': '// Implementar lógica aquí',
+            'IMPLEMENTACION_METODO_SECUNDARIO': 'return true;',
+            'RETORNO_METODO_SECUNDARIO': 'true',
+            
+            # Variables de Node.js
+            'PARAMETROS_METODO_SECUNDARIO_DOC': 'valor Valor a validar',
+            'TIPO_RETORNO_METODO_SECUNDARIO': 'Promise<boolean>',
+            'IMPLEMENTACION_METODO_PRINCIPAL': '// Implementar lógica aquí',
+            'IMPLEMENTACION_METODO_SECUNDARIO': 'return true;',
+            'RETORNO_METODO_SECUNDARIO': 'true',
+        }
+        
+        # Reemplazar placeholders con valores por defecto
+        for placeholder in unprocessed_placeholders:
+            if placeholder in default_values:
+                # Reemplazar formato {{VARIABLE}}
+                content = content.replace(f"{{{{{placeholder}}}}}", default_values[placeholder])
+                # Reemplazar formato $VARIABLE
+                content = content.replace(f"${placeholder}", default_values[placeholder])
+                self.logger.info(f"Reemplazado {placeholder} con valor por defecto: {default_values[placeholder]}")
+            else:
+                self.logger.warning(f"Placeholder sin valor por defecto: {placeholder}")
+        
+        return content
     
     @lru_cache(maxsize=128)
     def _get_destination_path(self, template_name: str, project_path_str: str, project_type: str, modulo_principal: str) -> Path:
