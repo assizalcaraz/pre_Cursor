@@ -1,0 +1,42 @@
+# MANIFEST.in for Pre-Cursor
+# Include additional files in the package distribution
+
+# Include templates
+recursive-include templates *.tpl
+
+# Include examples
+recursive-include examples *.json *.yaml *.md
+
+# Include documentation
+include README.md
+include QUICKSTART.md
+include CONTRIBUTING.md
+include CHANGELOG.md
+include LICENSE
+include METODOLOGIA_DESARROLLO.md
+include BITACORA.md
+include roadmap_v1.md
+
+# Include configuration files
+include pyproject.toml
+include requirements-dev.txt
+
+# Include GitHub files
+recursive-include .github *
+
+# Exclude development files
+exclude *.pyc
+exclude *.pyo
+exclude __pycache__
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+
+# Exclude test files
+recursive-exclude tests *
+recursive-exclude * test_*
+
+# Exclude build artifacts
+exclude build
+exclude dist
+exclude *.egg-info
+recursive-exclude * *.egg-info

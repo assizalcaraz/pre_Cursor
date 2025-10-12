@@ -1,18 +1,24 @@
-# Dependencias para testing y desarrollo
+# Dependencias de desarrollo para Pre-Cursor
+# Instalar con: pip install -e ".[dev]"
+# 
+# NOTA: Este archivo se mantiene por compatibilidad.
+# Las dependencias principales están ahora en pyproject.toml
+# Se recomienda usar: pip install -e ".[dev]"
 
 # Testing
 pytest>=7.0.0
 pytest-cov>=4.0.0
 pytest-asyncio>=0.21.0
 
-# Configuración y validación
-PyYAML>=6.0.0
-
-# Desarrollo
+# Code Quality
 black>=22.0.0
 flake8>=5.0.0
-mypy>=1.0.0
+mypy>=0.950
 
-# Utilidades
-rich>=12.0.0
-click>=8.0.0
+# Development Tools
+pre-commit>=3.0.0
+
+# Documentation
+mkdocs>=1.4.0
+mkdocs-material>=9.0.0
+mkdocstrings>=0.20.0
