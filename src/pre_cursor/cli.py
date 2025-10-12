@@ -86,8 +86,12 @@ def create(ctx, project_name, description, path, project_type, interactive, open
         project_path = _direct_create(project_name, description, path, project_type)
     
     # Abrir en Cursor si se solicita
-    if open_cursor or interactive:
+    if open_cursor:
         _open_in_cursor(project_path)
+    else:
+        # Preguntar si quiere abrir en Cursor
+        if Confirm.ask("\n¿Abrir proyecto en Cursor?"):
+            _open_in_cursor(project_path)
 
 @cli.command()
 @click.option('--type', '-t', 'project_type',
@@ -231,14 +235,21 @@ def _get_default_project_path(project_name):
     """Obtener ruta por defecto para el proyecto."""
     import os
     home = os.path.expanduser("~")
+    current_dir = os.getcwd()
+    
+    # Si estamos en el directorio pre_Cursor, usar directorio padre
+    if current_dir.endswith('pre_Cursor') or current_dir.endswith('pre-cursor'):
+        parent_dir = os.path.dirname(current_dir)
+        return os.path.join(parent_dir, project_name)
     
     # Intentar directorios comunes de proyectos
     possible_paths = [
         os.path.join(home, "Desktop"),
-        os.path.join(home, "Documents"),
+        os.path.join(home, "Documents", "Projects"),
         os.path.join(home, "Projects"),
         os.path.join(home, "Developer"),
-        os.getcwd()
+        os.path.join(home, "Documents"),
+        current_dir
     ]
     
     for path in possible_paths:
@@ -246,7 +257,7 @@ def _get_default_project_path(project_name):
             return os.path.join(path, project_name)
     
     # Fallback al directorio actual
-    return os.path.join(os.getcwd(), project_name)
+    return os.path.join(current_dir, project_name)
 
 def _open_in_cursor(project_path):
     """Abrir proyecto en Cursor."""
@@ -269,9 +280,17 @@ def _open_in_cursor(project_path):
             subprocess.run(["code", project_path], check=True)
             console.print("✅ Proyecto abierto en VS Code", style="green")
         except (subprocess.CalledProcessError, FileNotFoundError):
-            console.print("⚠️ No se pudo abrir automáticamente. Abre manualmente:", style="yellow")
-            console.print(f"   cd {project_path}")
-            console.print("   cursor .")
+            try:
+                # Fallback a abrir directorio en Finder/Explorer
+                if os.name == 'nt':  # Windows
+                    subprocess.run(["explorer", project_path], check=True)
+                elif os.name == 'posix':  # macOS/Linux
+                    subprocess.run(["open", project_path], check=True)
+                console.print("✅ Directorio abierto en el explorador", style="green")
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                console.print("⚠️ No se pudo abrir automáticamente. Abre manualmente:", style="yellow")
+                console.print(f"   cd {project_path}")
+                console.print("   cursor .")
 
 def _interactive_create(project_name, path):
     """Modo interactivo mejorado con Rich."""
@@ -366,13 +385,16 @@ def _direct_create(project_name, description, path, project_type):
     if not path:
         path = _get_default_project_path(project_name)
     
-    # Usar descripción por defecto si no se proporciona
+    # Solicitar descripción si no se proporciona
     if not description:
-        description = f"Proyecto {project_name} generado con Pre-Cursor"
+        console.print(f"\n📝 Descripción para el proyecto '{project_name}':")
+        description = Prompt.ask("Descripción", default=f"Proyecto {project_name} generado con Pre-Cursor")
     
     # Usar tipo por defecto si no se proporciona
     if not project_type:
         project_type = "Python Library"
+    
+    console.print(f"📍 Ubicación: [bold green]{path}[/bold green]")
     
     with Progress(
         SpinnerColumn(),
@@ -412,6 +434,14 @@ def _direct_create(project_name, description, path, project_type):
     
     console.print(f"🎉 Proyecto '{project_name}' creado exitosamente!", style="green")
     console.print(f"📁 Ubicación: {path}")
+    console.print(f"📝 Descripción: {description}")
+    console.print(f"🔧 Tipo: {project_type}")
+    
+    # Mostrar próximos pasos
+    console.print(f"\n🚀 Próximos pasos:")
+    console.print(f"   cd {path}")
+    console.print(f"   pip install -r requirements.txt")
+    console.print(f"   cursor .")
     
     return path
 
