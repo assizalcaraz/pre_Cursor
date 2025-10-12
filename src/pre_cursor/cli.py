@@ -21,6 +21,9 @@ from rich.prompt import Prompt, Confirm
 from rich import print as rprint
 
 # Importar el generador principal
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from init_project import ProjectGenerator
 
 console = Console()

@@ -68,12 +68,12 @@ Issues = "https://github.com/assizalcaraz/pre_Cursor/issues"
 Changelog = "https://github.com/assizalcaraz/pre_Cursor/blob/master/CHANGELOG.md"
 
 [project.scripts]
-pre-cursor = "cli:cli"
+pre-cursor = "pre_cursor.cli:cli"
 pre-cursor-legacy = "init_project:main"
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["src*", "init_project*"]
+where = ["src"]
+include = ["pre_cursor*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.tpl", "*.json", "*.yaml", "*.md"]
