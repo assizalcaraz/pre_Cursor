@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project({{NOMBRE_PROYECTO}} VERSION 1.0.0 LANGUAGES CXX)
+project($NOMBRE_PROYECTO VERSION 1.0.0 LANGUAGES CXX)
 
 # Configuración del compilador
 set(CMAKE_CXX_STANDARD 17)
@@ -14,27 +14,27 @@ include_directories(src)
 
 # Archivos fuente principales
 set(SOURCES
-    src/{{MODULO_PRINCIPAL}}.cpp
+    src/$MODULO_PRINCIPAL.cpp
     src/utils/logger.cpp
 )
 
 set(HEADERS
-    src/{{MODULO_PRINCIPAL}}.hpp
+    src/$MODULO_PRINCIPAL.hpp
     src/utils/logger.hpp
 )
 
 # Crear biblioteca principal
-add_library({{MODULO_PRINCIPAL}} STATIC ${SOURCES} ${HEADERS})
+add_library($MODULO_PRINCIPAL STATIC ${SOURCES} ${HEADERS})
 
 # Configurar propiedades de la biblioteca
-set_target_properties({{MODULO_PRINCIPAL}} PROPERTIES
+set_target_properties($MODULO_PRINCIPAL PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
 )
 
 # Ejecutable principal
-add_executable({{NOMBRE_PROYECTO}} src/main.cpp)
-target_link_libraries({{NOMBRE_PROYECTO}} {{MODULO_PRINCIPAL}})
+add_executable($NOMBRE_PROYECTO src/main.cpp)
+target_link_libraries($NOMBRE_PROYECTO $MODULO_PRINCIPAL)
 
 # Tests
 if(BUILD_TESTS)
@@ -48,10 +48,10 @@ if(BUILD_EXAMPLES)
 endif()
 
 # Instalación
-install(TARGETS {{MODULO_PRINCIPAL}} {{NOMBRE_PROYECTO}}
+install(TARGETS $MODULO_PRINCIPAL $NOMBRE_PROYECTO
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
 )
 
-install(FILES ${HEADERS} DESTINATION include/{{MODULO_PRINCIPAL}})
+install(FILES ${HEADERS} DESTINATION include/$MODULO_PRINCIPAL)

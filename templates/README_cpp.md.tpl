@@ -1,6 +1,6 @@
-# {{NOMBRE_PROYECTO}}
+# $NOMBRE_PROYECTO
 
-{{DESCRIPCION_PROYECTO}}
+$DESCRIPCION_PROYECTO
 
 ## 🚀 Inicio Rápido
 
@@ -13,7 +13,7 @@
 ```bash
 # Clonar el repositorio
 git clone {{REPOSITORIO_URL}}
-cd {{NOMBRE_PROYECTO}}
+cd $NOMBRE_PROYECTO
 
 # Crear directorio de build
 mkdir build && cd build
@@ -30,10 +30,10 @@ ctest
 
 ### Uso Básico
 ```cpp
-#include "{{MODULO_PRINCIPAL}}.hpp"
+#include "$MODULO_PRINCIPAL.hpp"
 
 int main() {
-    {{CLASE_PRINCIPAL}} proyecto;
+    $CLASE_PRINCIPAL proyecto;
     proyecto.ejecutar();
     return 0;
 }
@@ -42,18 +42,18 @@ int main() {
 ## 📁 Estructura del Proyecto
 
 ```
-{{NOMBRE_PROYECTO}}/
+$NOMBRE_PROYECTO/
 ├── README.md                    # Este archivo
 ├── BITACORA.md                 # Log de desarrollo
 ├── roadmap_v1.md               # Plan de desarrollo
 ├── CMakeLists.txt              # Configuración de CMake
 ├── src/                        # Código fuente
-│   ├── {{MODULO_PRINCIPAL}}.cpp
-│   ├── {{MODULO_PRINCIPAL}}.hpp
+│   ├── $MODULO_PRINCIPAL.cpp
+│   ├── $MODULO_PRINCIPAL.hpp
 │   └── utils/                  # Utilidades
 ├── tests/                      # Pruebas
 │   ├── README.md              # Instrucciones de testing
-│   ├── test_{{MODULO_PRINCIPAL}}.cpp
+│   ├── test_$MODULO_PRINCIPAL.cpp
 │   └── CMakeLists.txt
 ├── docs/                       # Documentación
 ├── examples/                   # Ejemplos
@@ -70,7 +70,7 @@ cd build
 make tests
 
 # Ejecutar tests
-./tests/test_{{MODULO_PRINCIPAL}}
+./tests/test_$MODULO_PRINCIPAL
 ```
 
 ## 📚 Documentación
@@ -103,16 +103,16 @@ make -j$(nproc)
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia {{LICENCIA}} - ver el archivo [LICENSE](LICENSE) para detalles.
+Este proyecto está bajo la Licencia $LICENCIA - ver el archivo [LICENSE](LICENSE) para detalles.
 
 ## 👨‍💻 Autor
 
-**{{AUTOR}}**
-- GitHub: [@{{GITHUB_USER}}](https://github.com/{{GITHUB_USER}})
+**$AUTOR**
+- GitHub: [@$GITHUB_USER](https://github.com/$GITHUB_USER)
 
 ## 📞 Contacto
 
-{{EMAIL_CONTACTO}}
+$EMAIL_CONTACTO
 
 ---
 

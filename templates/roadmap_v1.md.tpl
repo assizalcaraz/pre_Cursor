@@ -1,4 +1,4 @@
-# Roadmap v1 - {{NOMBRE_PROYECTO}}
+# Roadmap v1 - $NOMBRE_PROYECTO
 
 **Fecha**: {{FECHA_CREACION}}  
 **Objetivo**: {{OBJETIVO_PROYECTO}}  

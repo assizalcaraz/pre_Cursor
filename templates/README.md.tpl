@@ -1,6 +1,6 @@
-# {{NOMBRE_PROYECTO}}
+# $NOMBRE_PROYECTO
 
-{{DESCRIPCION_PROYECTO}}
+$DESCRIPCION_PROYECTO
 
 ## 🚀 Inicio Rápido
 
@@ -12,7 +12,7 @@
 ```bash
 # Clonar el repositorio
 git clone {{REPOSITORIO_URL}}
-cd {{NOMBRE_PROYECTO}}
+cd $NOMBRE_PROYECTO
 
 # Instalar dependencias
 pip install -r requirements.txt
@@ -23,7 +23,7 @@ pytest
 
 ### Uso Básico
 ```python
-from {{NOMBRE_PROYECTO}} import {{CLASE_PRINCIPAL}}
+from $NOMBRE_PROYECTO import $CLASE_PRINCIPAL
 
 # Ejemplo de uso
 {{EJEMPLO_USO}}
@@ -32,17 +32,17 @@ from {{NOMBRE_PROYECTO}} import {{CLASE_PRINCIPAL}}
 ## 📁 Estructura del Proyecto
 
 ```
-{{NOMBRE_PROYECTO}}/
+$NOMBRE_PROYECTO/
 ├── README.md                    # Este archivo
 ├── BITACORA.md                 # Log de desarrollo
 ├── roadmap_v1.md               # Plan de desarrollo
 ├── requirements.txt            # Dependencias
 ├── src/                        # Código fuente
-│   ├── {{MODULO_PRINCIPAL}}.py # Módulo principal
+│   ├── $MODULO_PRINCIPAL.py # Módulo principal
 │   └── utils/                  # Utilidades
 ├── tests/                      # Pruebas
 │   ├── README.md              # Instrucciones de testing
-│   └── test_{{MODULO_PRINCIPAL}}.py
+│   └── test_$MODULO_PRINCIPAL.py
 ├── docs/                       # Documentación
 └── examples/                   # Ejemplos
 ```
@@ -67,16 +67,16 @@ Seguir las instrucciones en `tests/README.md` para ejecutar las pruebas.
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia {{LICENCIA}} - ver el archivo [LICENSE](LICENSE) para detalles.
+Este proyecto está bajo la Licencia $LICENCIA - ver el archivo [LICENSE](LICENSE) para detalles.
 
 ## 👨‍💻 Autor
 
-**{{AUTOR}}**
-- GitHub: [@{{GITHUB_USER}}](https://github.com/{{GITHUB_USER}})
+**$AUTOR**
+- GitHub: [@$GITHUB_USER](https://github.com/$GITHUB_USER)
 
 ## 📞 Contacto
 
-{{EMAIL_CONTACTO}}
+$EMAIL_CONTACTO
 
 ---
 

@@ -19,6 +19,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional
 import json
+from string import Template
+import concurrent.futures
+from functools import lru_cache
 
 # Importar sistemas de validación y configuración
 sys.path.append(str(Path(__file__).parent / "src"))
@@ -264,10 +267,11 @@ class ProjectGenerator:
         print("7. Python ML/AI")
         print("8. C++ Project")
         print("9. Node.js Project")
-        print("10. Otro")
+        print("10. TD_MCP Project")
+        print("11. Otro")
         
         while True:
-            choice = input("Selecciona (1-10): ").strip()
+            choice = input("Selecciona (1-11): ").strip()
             types = {
                 "1": "Python Library",
                 "2": "Python CLI Tool", 
@@ -278,7 +282,8 @@ class ProjectGenerator:
                 "7": "Python ML/AI",
                 "8": "C++ Project",
                 "9": "Node.js Project",
-                "10": "Otro"
+                "10": "TD_MCP Project",
+                "11": "Otro"
             }
             if choice in types:
                 self.logger.info(f"Tipo de proyecto seleccionado: {types[choice]}")
@@ -295,6 +300,7 @@ class ProjectGenerator:
             "Python Web App (FastAPI)": "pytest>=7.0.0\npytest-cov>=4.0.0\nblack>=22.0.0\nflake8>=5.0.0",
             "Python Data Science": "pytest>=7.0.0\npytest-cov>=4.0.0\nblack>=22.0.0\nflake8>=5.0.0",
             "Python ML/AI": "pytest>=7.0.0\npytest-cov>=4.0.0\nblack>=22.0.0\nflake8>=5.0.0",
+            "TD_MCP Project": "pytest>=7.0.0\npytest-cov>=4.0.0\nblack>=22.0.0\nflake8>=5.0.0\npytest-asyncio>=0.21.0",
             "C++ Project": "# Dependencias de desarrollo\n# gtest>=1.11.0\n# clang-format",
             "Node.js Project": '"nodemon": "^2.0.0",\n    "jest": "^29.0.0",\n    "eslint": "^8.0.0",\n    "prettier": "^2.8.0"',
             "Otro": "# Dependencias de desarrollo\n# Añadir según necesidades"
@@ -311,6 +317,7 @@ class ProjectGenerator:
             "Python Web App (FastAPI)": "# Dependencias principales\nfastapi>=0.100.0\nuvicorn>=0.23.0\npydantic>=2.0.0",
             "Python Data Science": "# Dependencias principales\npandas>=1.5.0\nnumpy>=1.21.0\nmatplotlib>=3.5.0",
             "Python ML/AI": "# Dependencias principales\ntorch>=1.12.0\ntensorflow>=2.10.0\nscikit-learn>=1.1.0",
+            "TD_MCP Project": "# Dependencias principales\nmcp>=1.0.0\nasyncio-mqtt>=0.13.0\nwebsockets>=11.0.0\npydantic>=2.0.0",
             "C++ Project": "# Dependencias principales\n# CMake>=3.16\n# gtest>=1.11.0",
             "Node.js Project": '"express": "^4.18.0",\n    "cors": "^2.8.5"',
             "Otro": "# Dependencias principales\n# Añadir según necesidades"
@@ -332,14 +339,14 @@ class ProjectGenerator:
     
     def create_project_structure(self, project_path: Path) -> None:
         """
-        Crear estructura de directorios del proyecto.
+        Crear estructura de directorios del proyecto de manera optimizada.
         
         Args:
             project_path: Ruta donde crear el proyecto
         """
         print(f"📁 Creando estructura en {project_path}")
         
-        # Crear directorios principales
+        # Crear directorios principales en lote
         directories = [
             "src",
             "tests", 
@@ -348,6 +355,17 @@ class ProjectGenerator:
             "logs"
         ]
         
+        # Crear todos los directorios de una vez para mejor rendimiento
+        self._create_directories_batch(project_path, directories)
+    
+    def _create_directories_batch(self, project_path: Path, directories: list) -> None:
+        """
+        Crear múltiples directorios de manera eficiente.
+        
+        Args:
+            project_path: Ruta base del proyecto
+            directories: Lista de directorios a crear
+        """
         for directory in directories:
             dir_path = project_path / directory
             dir_path.mkdir(parents=True, exist_ok=True)
@@ -382,7 +400,7 @@ class ProjectGenerator:
     
     def process_templates(self, project_path: Path) -> None:
         """
-        Procesar plantillas y crear archivos del proyecto.
+        Procesar plantillas y crear archivos del proyecto de manera optimizada.
         
         Args:
             project_path: Ruta del proyecto
@@ -391,6 +409,37 @@ class ProjectGenerator:
         
         project_type = self.project_data.get('TIPO_PROYECTO', 'Python Library')
         
+        # Obtener lista de plantillas a procesar
+        template_files = self._get_template_files(project_type)
+        
+        # Filtrar plantillas existentes
+        existing_templates = []
+        for template_file in template_files:
+            template_path = self.template_dir / template_file
+            if template_path.exists():
+                existing_templates.append(template_path)
+            else:
+                print(f"  ⚠️ Plantilla no encontrada: {template_file}")
+        
+        # Procesar plantillas en paralelo para mejor rendimiento
+        if len(existing_templates) > 3:  # Solo usar paralelismo si hay suficientes plantillas
+            self._process_templates_parallel(existing_templates, project_path)
+        else:
+            # Procesamiento secuencial para pocas plantillas
+            for template_path in existing_templates:
+                self._process_template(template_path, project_path)
+    
+    @lru_cache(maxsize=32)
+    def _get_template_files(self, project_type: str) -> tuple:
+        """
+        Obtener lista de plantillas basada en el tipo de proyecto (con cache).
+        
+        Args:
+            project_type: Tipo de proyecto
+            
+        Returns:
+            tuple: Lista de archivos de plantilla
+        """
         # Plantillas base comunes
         base_templates = [
             "BITACORA.md.tpl", 
@@ -412,6 +461,14 @@ class ProjectGenerator:
                 "package.json.tpl",
                 "modulo_principal_nodejs.js.tpl"
             ]
+        elif project_type == "TD_MCP Project":
+            specific_templates = [
+                "README_td_mcp.md.tpl",
+                "requirements_td_mcp.txt.tpl",
+                "modulo_principal_td_mcp.py.tpl",
+                "config_td_mcp.py.tpl",
+                "config_td_mcp.json.tpl"
+            ]
         else:  # Proyectos Python
             specific_templates = [
                 "README.md.tpl",
@@ -419,39 +476,67 @@ class ProjectGenerator:
                 "modulo_principal.py.tpl"
             ]
         
-        # Combinar todas las plantillas
-        all_templates = base_templates + specific_templates
+        return tuple(base_templates + specific_templates)
+    
+    def _process_templates_parallel(self, template_paths: list, project_path: Path) -> None:
+        """
+        Procesar plantillas en paralelo para mejor rendimiento.
         
-        for template_file in all_templates:
-            template_path = self.template_dir / template_file
-            if template_path.exists():
-                self._process_template(template_path, project_path)
-            else:
-                print(f"  ⚠️ Plantilla no encontrada: {template_file}")
+        Args:
+            template_paths: Lista de rutas de plantillas
+            project_path: Ruta del proyecto
+        """
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            # Crear tareas para procesamiento paralelo
+            futures = [
+                executor.submit(self._process_template, template_path, project_path)
+                for template_path in template_paths
+            ]
+            
+            # Esperar a que todas las tareas terminen
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    print(f"  ❌ Error en procesamiento paralelo: {e}")
     
     def _process_template(self, template_path: Path, project_path: Path) -> None:
         """
-        Procesar una plantilla individual.
+        Procesar una plantilla individual de manera optimizada.
         
         Args:
             template_path: Ruta de la plantilla
             project_path: Ruta del proyecto
         """
         try:
-            # Leer plantilla
+            # Leer plantilla una sola vez
             with open(template_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            # Reemplazar placeholders
-            for key, value in self.project_data.items():
-                placeholder = f"{{{{{key}}}}}"
-                content = content.replace(placeholder, str(value))
+            # Usar Template para reemplazo más eficiente
+            template = Template(content)
             
-            # Determinar archivo de destino basado en tipo de proyecto
+            # Preparar datos de reemplazo con valores seguros
+            safe_data = {}
+            for key, value in self.project_data.items():
+                # Escapar caracteres especiales para Template
+                safe_value = str(value).replace('$', '$$')
+                safe_data[key] = safe_value
+            
+            # Reemplazar placeholders de manera más eficiente
+            try:
+                content = template.safe_substitute(safe_data)
+            except KeyError as e:
+                # Fallback a método anterior si hay problemas con Template
+                for key, value in safe_data.items():
+                    placeholder = f"{{{{{key}}}}}"
+                    content = content.replace(placeholder, value)
+            
+            # Determinar archivo de destino
             template_name = template_path.name
             project_type = self.project_data.get('TIPO_PROYECTO', 'Python Library')
-            
-            dest_path = self._get_destination_path(template_name, project_path, project_type)
+            modulo_principal = self.project_data.get('MODULO_PRINCIPAL', 'main')
+            dest_path = self._get_destination_path(template_name, str(project_path), project_type, modulo_principal)
             
             # Crear directorio padre si no existe
             dest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -465,19 +550,21 @@ class ProjectGenerator:
         except Exception as e:
             print(f"  ❌ Error procesando {template_path.name}: {e}")
     
-    def _get_destination_path(self, template_name: str, project_path: Path, project_type: str) -> Path:
+    @lru_cache(maxsize=128)
+    def _get_destination_path(self, template_name: str, project_path_str: str, project_type: str, modulo_principal: str) -> Path:
         """
-        Determinar la ruta de destino basada en el tipo de proyecto.
+        Determinar la ruta de destino basada en el tipo de proyecto (con cache).
         
         Args:
             template_name: Nombre de la plantilla
-            project_path: Ruta del proyecto
+            project_path_str: Ruta del proyecto como string (para cache)
             project_type: Tipo de proyecto
+            modulo_principal: Nombre del módulo principal
             
         Returns:
             Path: Ruta de destino del archivo
         """
-        modulo_principal = self.project_data['MODULO_PRINCIPAL']
+        project_path = Path(project_path_str)
         
         # Mapeo de plantillas a archivos de destino por tipo de proyecto
         if project_type == "C++ Project":
@@ -504,6 +591,25 @@ class ProjectGenerator:
                 return project_path / "package.json"
             elif template_name == "modulo_principal_nodejs.js.tpl":
                 return project_path / "src" / f"{modulo_principal}.js"
+            elif template_name == "TUTORIAL.md.tpl":
+                return project_path / "docs" / "TUTORIAL.md"
+            elif template_name.endswith(".tpl"):
+                dest_name = template_name[:-4]
+                return project_path / dest_name
+            else:
+                return project_path / template_name
+        
+        elif project_type == "TD_MCP Project":
+            if template_name == "README_td_mcp.md.tpl":
+                return project_path / "README.md"
+            elif template_name == "requirements_td_mcp.txt.tpl":
+                return project_path / "requirements.txt"
+            elif template_name == "modulo_principal_td_mcp.py.tpl":
+                return project_path / "src" / f"{modulo_principal}.py"
+            elif template_name == "config_td_mcp.py.tpl":
+                return project_path / "config.py"
+            elif template_name == "config_td_mcp.json.tpl":
+                return project_path / "config.json"
             elif template_name == "TUTORIAL.md.tpl":
                 return project_path / "docs" / "TUTORIAL.md"
             elif template_name.endswith(".tpl"):

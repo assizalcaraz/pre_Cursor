@@ -1,11 +1,11 @@
 {
-  "name": "{{MODULO_PRINCIPAL}}",
+  "name": "$MODULO_PRINCIPAL",
   "version": "1.0.0",
-  "description": "{{DESCRIPCION_PROYECTO}}",
-  "main": "src/{{MODULO_PRINCIPAL}}.js",
+  "description": "$DESCRIPCION_PROYECTO",
+  "main": "src/$MODULO_PRINCIPAL.js",
   "scripts": {
-    "start": "node src/{{MODULO_PRINCIPAL}}.js",
-    "dev": "nodemon src/{{MODULO_PRINCIPAL}}.js",
+    "start": "node src/$MODULO_PRINCIPAL.js",
+    "dev": "nodemon src/$MODULO_PRINCIPAL.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -17,8 +17,8 @@
   "keywords": [
     "{{PALABRAS_CLAVE}}"
   ],
-  "author": "{{AUTOR}}",
-  "license": "{{LICENCIA}}",
+  "author": "$AUTOR",
+  "license": "$LICENCIA",
   "repository": {
     "type": "git",
     "url": "{{REPOSITORIO_URL}}"

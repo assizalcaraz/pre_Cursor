@@ -40,6 +40,7 @@ class ProjectValidator:
         "Python ML/AI",
         "C++ Project",
         "Node.js Project",
+        "TD_MCP Project",
         "Otro"
     ]
     

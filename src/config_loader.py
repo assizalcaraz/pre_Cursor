@@ -141,7 +141,7 @@ class ConfigLoader:
             "Python Library", "Python CLI Tool", "Python Web App (Flask)",
             "Python Web App (Django)", "Python Web App (FastAPI)",
             "Python Data Science", "Python ML/AI", "C++ Project",
-            "Node.js Project", "Otro"
+            "Node.js Project", "TD_MCP Project", "Otro"
         ]
         
         if config.get("project_type") not in valid_types:

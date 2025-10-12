@@ -1,7 +1,6 @@
-# Generador de Proyectos Optimizado para Agentes de IA
+# Pre-Cursor: Generador de Proyectos Optimizado para Agentes de IA
 
-**Fecha**: 2024-12-19  
-**Objetivo**: Crear un sistema de scaffolding automatizado que genere proyectos siguiendo la metodología establecida, optimizado para trabajo con agentes de IA en Cursor IDE
+**Pre-Cursor** es un sistema de scaffolding automatizado que genera proyectos siguiendo una metodología establecida, optimizado para trabajo con agentes de IA en Cursor IDE.
 
 ---
 
@@ -18,13 +17,13 @@ git clone <URL_DEL_REPOSITORIO>
 cd pre_cursor
 
 # Modo interactivo
-python init_project.py
+python3 init_project.py
 
 # Modo directo
-python init_project.py MiNuevoProyecto
+python3 init_project.py MiNuevoProyecto
 
-# Script de inicio rápido
-./iniciar.sh MiNuevoProyecto
+# Usar archivo de configuración
+python3 init_project.py --config mi_config.json
 ```
 
 ### Uso Básico
@@ -48,21 +47,36 @@ pre_cursor/
 ├── BITACORA.md                 # Log de desarrollo
 ├── METODOLOGIA_DESARROLLO.md   # Metodología establecida
 ├── init_project.py             # Script principal
-├── iniciar.sh                  # Script de inicio rápido
 ├── config.py                   # Configuración
-├── ejemplos_basicos.py         # Ejemplos de uso
+├── pyproject.toml              # Configuración del proyecto
+├── requirements-dev.txt        # Dependencias de desarrollo
 ├── templates/                   # Plantillas de archivos
 │   ├── README.md.tpl
+│   ├── README_td_mcp.md.tpl    # Plantilla específica TD_MCP
 │   ├── BITACORA.md.tpl
 │   ├── roadmap_v1.md.tpl
 │   ├── requirements.txt.tpl
+│   ├── requirements_td_mcp.txt.tpl
 │   ├── TUTORIAL.md.tpl
-│   └── modulo_principal.py.tpl
+│   ├── modulo_principal.py.tpl
+│   ├── modulo_principal_td_mcp.py.tpl
+│   ├── config_td_mcp.py.tpl
+│   ├── config_td_mcp.json.tpl
+│   └── [otras plantillas...]
+├── src/                        # Código fuente del generador
+│   ├── config_loader.py        # Cargador de configuraciones
+│   └── validator.py            # Validador de parámetros
 ├── tests/                      # Pruebas
-│   └── README.md
+│   ├── README.md
+│   ├── test_config_loader.py
+│   ├── test_init_project.py
+│   ├── test_integration.py
+│   └── test_validator.py
 ├── docs/                       # Documentación
-├── examples/                   # Ejemplos
-└── structure/                  # Estructura base
+├── examples/                   # Ejemplos de configuración
+│   ├── config_fastapi.yaml
+│   └── config_python_library.json
+└── structure/                  # Estructura base (vacío)
 ```
 
 ---
@@ -76,12 +90,14 @@ pre_cursor/
 - **Múltiples Tipos**: Soporte para diferentes tipos de proyecto
 - **Documentación**: Sistema completo de documentación
 - **Metodología**: Sigue la metodología establecida
+- **Validación**: Validación robusta de parámetros de entrada
+- **Configuración**: Soporte para archivos de configuración JSON/YAML
+- **TD_MCP Integration**: Soporte específico para proyectos TD_MCP
 
 ### 🔄 En Desarrollo
 - **Tests Automáticos**: Suite de tests para el generador
-- **Configuración Avanzada**: Archivos de configuración JSON
 - **Plantillas Adicionales**: Más tipos de proyecto
-- **Validación**: Validación de parámetros de entrada
+- **Configuración Avanzada**: Más opciones de personalización
 
 ---
 
@@ -90,11 +106,14 @@ pre_cursor/
 Seguir las instrucciones en `tests/README.md` para ejecutar las pruebas.
 
 ```bash
-# Ejecutar ejemplos
-python ejemplos_basicos.py
+# Ejecutar tests
+python3 -m pytest tests/
+
+# Ejecutar con cobertura
+python3 -m pytest tests/ --cov=src/
 
 # Verificar generación
-python init_project.py ProyectoTest
+python3 init_project.py ProyectoTest
 ```
 
 ---
@@ -104,7 +123,7 @@ python init_project.py ProyectoTest
 - [Metodología de Desarrollo](METODOLOGIA_DESARROLLO.md)
 - [Bitácora del Proyecto](BITACORA.md)
 - [Instrucciones de Testing](tests/README.md)
-- [Ejemplos de Uso](ejemplos_basicos.py)
+- [Ejemplos de Configuración](examples/)
 
 ---
 
@@ -114,9 +133,13 @@ python init_project.py ProyectoTest
 2. **Python CLI Tool**: Herramientas de línea de comandos
 3. **Python Web App (Flask)**: Aplicaciones web con Flask
 4. **Python Web App (Django)**: Aplicaciones web con Django
-5. **Python Data Science**: Proyectos de ciencia de datos
-6. **Python ML/AI**: Proyectos de machine learning e IA
-7. **Otro**: Configuración personalizada
+5. **Python Web App (FastAPI)**: Aplicaciones web con FastAPI
+6. **Python Data Science**: Proyectos de ciencia de datos
+7. **Python ML/AI**: Proyectos de machine learning e IA
+8. **C++ Project**: Proyectos en C++
+9. **Node.js Project**: Proyectos en Node.js
+10. **TD_MCP Project**: Proyectos MCP para TouchDesigner
+11. **Otro**: Configuración personalizada
 
 ---
 
@@ -124,8 +147,8 @@ python init_project.py ProyectoTest
 
 ### Instrucción Simple para Agentes
 ```
-"Clona el repositorio project-template-generator y ejecuta 
-python init_project.py para crear un nuevo proyecto llamado 
+"Clona el repositorio pre_cursor y ejecuta 
+python3 init_project.py para crear un nuevo proyecto llamado 
 'MiNuevaApp' con la descripción 'Una aplicación para 
 visualización de datos'."
 ```
@@ -135,6 +158,7 @@ visualización de datos'."
 - **Reducción de Ambigüedad**: Información estructurada y predecible
 - **Consistencia Garantizada**: Cada proyecto sigue la metodología al 100%
 - **Contexto Automático**: Archivo CONTEXTO.md generado automáticamente
+- **Soporte TD_MCP**: Generación específica para proyectos TouchDesigner MCP
 
 ---
 
@@ -169,4 +193,4 @@ Para preguntas o sugerencias, crear un issue en el repositorio.
 
 **Fecha de Creación**: 2024-12-19  
 **Última Actualización**: 2024-12-19  
-**Estado**: Fase 1 Completada - Estructura Base Implementada
+**Estado**: Fase 2 Completada - Integración TD_MCP Implementada

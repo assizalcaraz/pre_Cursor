@@ -1,4 +1,4 @@
-# {{NOMBRE_PROYECTO}} - Requirements
+# $NOMBRE_PROYECTO - Requirements
 
 ## Dependencias Principales
 
@@ -33,7 +33,7 @@ pip install -e .
 
 ## Versiones Mínimas
 
-- Python: {{PYTHON_VERSION_MIN}}
+- Python: $PYTHON_VERSION_MIN
 - {{OTRA_DEPENDENCIA}}: {{VERSION_MINIMA}}
 
 ---

@@ -1,6 +1,6 @@
-# {{NOMBRE_PROYECTO}}
+# $NOMBRE_PROYECTO
 
-{{DESCRIPCION_PROYECTO}}
+$DESCRIPCION_PROYECTO
 
 ## 🚀 Inicio Rápido
 
@@ -13,7 +13,7 @@
 ```bash
 # Clonar el repositorio
 git clone {{REPOSITORIO_URL}}
-cd {{NOMBRE_PROYECTO}}
+cd $NOMBRE_PROYECTO
 
 # Instalar dependencias
 npm install
@@ -28,10 +28,10 @@ yarn test
 
 ### Uso Básico
 ```javascript
-const {{CLASE_PRINCIPAL}} = require('./src/{{MODULO_PRINCIPAL}}');
+const $CLASE_PRINCIPAL = require('./src/$MODULO_PRINCIPAL');
 
 // Crear instancia
-const proyecto = new {{CLASE_PRINCIPAL}}();
+const proyecto = new $CLASE_PRINCIPAL();
 
 // Usar funcionalidad
 proyecto.{{METODO_PRINCIPAL}}();
@@ -40,19 +40,19 @@ proyecto.{{METODO_PRINCIPAL}}();
 ## 📁 Estructura del Proyecto
 
 ```
-{{NOMBRE_PROYECTO}}/
+$NOMBRE_PROYECTO/
 ├── README.md                    # Este archivo
 ├── BITACORA.md                 # Log de desarrollo
 ├── roadmap_v1.md               # Plan de desarrollo
 ├── package.json                # Configuración del proyecto
 ├── package-lock.json           # Lock file de dependencias
 ├── src/                        # Código fuente
-│   ├── {{MODULO_PRINCIPAL}}.js
-│   ├── {{MODULO_PRINCIPAL}}.ts  # Si usa TypeScript
+│   ├── $MODULO_PRINCIPAL.js
+│   ├── $MODULO_PRINCIPAL.ts  # Si usa TypeScript
 │   └── utils/                  # Utilidades
 ├── tests/                      # Pruebas
 │   ├── README.md              # Instrucciones de testing
-│   └── {{MODULO_PRINCIPAL}}.test.js
+│   └── $MODULO_PRINCIPAL.test.js
 ├── docs/                       # Documentación
 ├── examples/                   # Ejemplos
 └── dist/                       # Código compilado (si aplica)
@@ -100,16 +100,16 @@ npm run format         # Formatear código
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia {{LICENCIA}} - ver el archivo [LICENSE](LICENSE) para detalles.
+Este proyecto está bajo la Licencia $LICENCIA - ver el archivo [LICENSE](LICENSE) para detalles.
 
 ## 👨‍💻 Autor
 
-**{{AUTOR}}**
-- GitHub: [@{{GITHUB_USER}}](https://github.com/{{GITHUB_USER}})
+**$AUTOR**
+- GitHub: [@$GITHUB_USER](https://github.com/$GITHUB_USER)
 
 ## 📞 Contacto
 
-{{EMAIL_CONTACTO}}
+$EMAIL_CONTACTO
 
 ---
 

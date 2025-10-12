@@ -1,20 +1,20 @@
-# Tutorial de Inicio - {{NOMBRE_PROYECTO}}
+# Tutorial de Inicio - $NOMBRE_PROYECTO
 
 **Fecha**: {{FECHA_CREACION}}  
-**Lección**: Configuración e Inicio del {{NOMBRE_PROYECTO}}  
-**Resumen**: Guía completa paso a paso para configurar y usar el {{NOMBRE_PROYECTO}} que permite {{FUNCIONALIDAD_PRINCIPAL}}.
+**Lección**: Configuración e Inicio del $NOMBRE_PROYECTO  
+**Resumen**: Guía completa paso a paso para configurar y usar el $NOMBRE_PROYECTO que permite {{FUNCIONALIDAD_PRINCIPAL}}.
 
 ---
 
-## Bienvenido al {{NOMBRE_PROYECTO}}
+## Bienvenido al $NOMBRE_PROYECTO
 
-Este tutorial te guiará paso a paso para configurar y usar el {{NOMBRE_PROYECTO}}.
+Este tutorial te guiará paso a paso para configurar y usar el $NOMBRE_PROYECTO.
 
-### ¿Qué es {{NOMBRE_PROYECTO}}?
+### ¿Qué es $NOMBRE_PROYECTO?
 
-{{DESCRIPCION_DETALLADA}}
+$DESCRIPCION_DETALLADA
 
-### ¿Por qué usar {{NOMBRE_PROYECTO}}?
+### ¿Por qué usar $NOMBRE_PROYECTO?
 
 - ✅ **{{BENEFICIO_1}}**
 - ✅ **{{BENEFICIO_2}}**
@@ -26,7 +26,7 @@ Este tutorial te guiará paso a paso para configurar y usar el {{NOMBRE_PROYECTO
 
 ### Requisitos Previos
 
-- Python {{PYTHON_VERSION_MIN}} o superior
+- Python $PYTHON_VERSION_MIN o superior
 - Git
 - {{OTRO_REQUISITO}}
 
@@ -34,7 +34,7 @@ Este tutorial te guiará paso a paso para configurar y usar el {{NOMBRE_PROYECTO
 
 ```bash
 git clone {{REPOSITORIO_URL}}
-cd {{NOMBRE_PROYECTO}}
+cd $NOMBRE_PROYECTO
 ```
 
 ### Paso 2: Instalar Dependencias
@@ -46,7 +46,7 @@ pip install -r requirements.txt
 ### Paso 3: Verificar Instalación
 
 ```bash
-python -c "import {{MODULO_PRINCIPAL}}; print('{{NOMBRE_PROYECTO}} instalado correctamente')"
+python -c "import $MODULO_PRINCIPAL; print('$NOMBRE_PROYECTO instalado correctamente')"
 ```
 
 ---
@@ -56,7 +56,7 @@ python -c "import {{MODULO_PRINCIPAL}}; print('{{NOMBRE_PROYECTO}} instalado cor
 ### Ejemplo 1: {{EJEMPLO_1_TITULO}}
 
 ```python
-from {{MODULO_PRINCIPAL}} import {{CLASE_PRINCIPAL}}
+from $MODULO_PRINCIPAL import $CLASE_PRINCIPAL
 
 # {{EJEMPLO_1_DESCRIPCION}}
 {{EJEMPLO_1_CODIGO}}
@@ -98,10 +98,10 @@ export {{VARIABLE_2}}="{{VALOR_2}}"
 pytest
 
 # Test específico
-pytest tests/test_{{MODULO_PRINCIPAL}}.py
+pytest tests/test_$MODULO_PRINCIPAL.py
 
 # Con coverage
-pytest --cov={{MODULO_PRINCIPAL}}
+pytest --cov=$MODULO_PRINCIPAL
 ```
 
 ### Crear Nuevos Tests
@@ -136,7 +136,7 @@ Seguir las instrucciones en `tests/README.md`.
 ## 🤝 Obtener Ayuda
 
 - **GitHub Issues**: [{{REPOSITORIO_URL}}/issues]({{REPOSITORIO_URL}}/issues)
-- **Email**: {{EMAIL_CONTACTO}}
+- **Email**: $EMAIL_CONTACTO
 - **Discord**: {{DISCORD_SERVER}}
 
 ---

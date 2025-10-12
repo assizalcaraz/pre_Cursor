@@ -1,9 +1,9 @@
 /**
- * {{NOMBRE_PROYECTO}} - {{DESCRIPCION_PROYECTO}}
+ * $NOMBRE_PROYECTO - $DESCRIPCION_PROYECTO
  * 
- * {{DESCRIPCION_DETALLADA}}
+ * $DESCRIPCION_DETALLADA
  * 
- * @author {{AUTOR}}
+ * @author $AUTOR
  * @date {{FECHA_CREACION}}
  */
 
@@ -14,17 +14,17 @@ const logger = require('./utils/logger');
  * 
  * Esta clase proporciona {{FUNCIONALIDAD_PRINCIPAL}}.
  */
-class {{CLASE_PRINCIPAL}} {
+class $CLASE_PRINCIPAL {
     /**
-     * Constructor de {{CLASE_PRINCIPAL}}
+     * Constructor de $CLASE_PRINCIPAL
      * @param {Object} options - Opciones de configuración
      */
     constructor(options = {}) {
-        this.nombre = options.nombre || '{{NOMBRE_PROYECTO}}';
+        this.nombre = options.nombre || '$NOMBRE_PROYECTO';
         this.inicializado = false;
         this.opciones = options;
         
-        logger.info('{{CLASE_PRINCIPAL}} inicializada');
+        logger.info('$CLASE_PRINCIPAL inicializada');
     }
     
     /**
@@ -71,16 +71,16 @@ class {{CLASE_PRINCIPAL}} {
      * Destructor
      */
     destroy() {
-        logger.info('{{CLASE_PRINCIPAL}} destruida');
+        logger.info('$CLASE_PRINCIPAL destruida');
         this.inicializado = false;
     }
 }
 
-module.exports = {{CLASE_PRINCIPAL}};
+module.exports = $CLASE_PRINCIPAL;
 
 // Ejemplo de uso si se ejecuta directamente
 if (require.main === module) {
-    const proyecto = new {{CLASE_PRINCIPAL}}();
+    const proyecto = new $CLASE_PRINCIPAL();
     proyecto.{{METODO_PRINCIPAL}}()
         .then(() => {
             console.log('Proyecto ejecutado exitosamente');

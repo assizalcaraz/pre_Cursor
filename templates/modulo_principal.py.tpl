@@ -1,9 +1,9 @@
 """
-{{NOMBRE_PROYECTO}} - {{DESCRIPCION_PROYECTO}}
+$NOMBRE_PROYECTO - $DESCRIPCION_PROYECTO
 
-{{DESCRIPCION_DETALLADA}}
+$DESCRIPCION_DETALLADA
 
-Autor: {{AUTOR}}
+Autor: $AUTOR
 Fecha: {{FECHA_CREACION}}
 """
 
@@ -18,7 +18,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class {{CLASE_PRINCIPAL}}:
+class $CLASE_PRINCIPAL:
     """
     {{DESCRIPCION_CLASE_PRINCIPAL}}
     
@@ -27,14 +27,14 @@ class {{CLASE_PRINCIPAL}}:
     
     def __init__(self, {{PARAMETROS_INIT}}):
         """
-        Inicializar {{CLASE_PRINCIPAL}}.
+        Inicializar $CLASE_PRINCIPAL.
         
         Args:
             {{DOCSTRING_PARAMETROS}}
         """
         self.{{ATRIBUTO_1}} = {{ATRIBUTO_1}}
         self.{{ATRIBUTO_2}} = {{ATRIBUTO_2}}
-        logger.info("{{CLASE_PRINCIPAL}} inicializada")
+        logger.info("$CLASE_PRINCIPAL inicializada")
     
     def {{METODO_PRINCIPAL}}(self, {{PARAMETROS_METODO}}) -> {{TIPO_RETORNO}}:
         """

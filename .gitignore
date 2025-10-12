@@ -365,3 +365,19 @@ __pycache__/
 # Generated files
 generated/
 auto-generated/
+
+# Project specific temporary files
+project_generator.log
+test_*_config.json
+benchmark.py
+ejemplos_basicos.py
+iniciar.sh
+run_tests.py
+
+# Log files (can grow very large)
+*.log
+logs/
+
+# Test projects (generated during development)
+test_*/
+*_test_project/

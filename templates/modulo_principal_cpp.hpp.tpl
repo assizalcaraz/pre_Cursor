@@ -5,25 +5,25 @@
 #include <vector>
 #include <memory>
 
-namespace {{NOMBRE_PROYECTO}} {
+namespace $NOMBRE_PROYECTO {
 
 /**
- * @class {{CLASE_PRINCIPAL}}
+ * @class $CLASE_PRINCIPAL
  * @brief {{DESCRIPCION_CLASE_PRINCIPAL}}
  * 
  * Esta clase proporciona {{FUNCIONALIDAD_PRINCIPAL}}.
  */
-class {{CLASE_PRINCIPAL}} {
+class $CLASE_PRINCIPAL {
 public:
     /**
      * @brief Constructor por defecto
      */
-    {{CLASE_PRINCIPAL}}();
+    $CLASE_PRINCIPAL();
     
     /**
      * @brief Destructor
      */
-    ~{{CLASE_PRINCIPAL}}();
+    ~$CLASE_PRINCIPAL();
     
     /**
      * @brief Ejecutar funcionalidad principal
@@ -49,6 +49,6 @@ private:
     void inicializar();
 };
 
-} // namespace {{NOMBRE_PROYECTO}}
+} // namespace $NOMBRE_PROYECTO
 
 #endif // {{MODULO_PRINCIPAL_UPPER}}_HPP
