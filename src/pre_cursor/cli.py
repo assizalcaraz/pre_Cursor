@@ -50,7 +50,8 @@ def cli(ctx, verbose, config):
 @cli.command()
 @click.argument('project_name')
 @click.option('--description', '-d', help='Descripción del proyecto')
-@click.option('--path', '-p', type=click.Path(), help='Ruta donde crear el proyecto')
+@click.option('--path', '-p', type=click.Path(), help='Ruta donde crear el proyecto (deprecated, usar --output-dir)')
+@click.option('--output-dir', '-o', type=str, help='Directorio de salida para el proyecto')
 @click.option('--type', '-t', 'project_type', 
               type=click.Choice([
                   'Python Library', 'Python CLI Tool', 'Python Web App (Flask)',
@@ -61,16 +62,20 @@ def cli(ctx, verbose, config):
               help='Tipo de proyecto')
 @click.option('--interactive', '-i', is_flag=True, help='Modo interactivo')
 @click.option('--open-cursor', is_flag=True, help='Abrir proyecto en Cursor al finalizar')
+@click.option('--force', '-f', is_flag=True, help='Forzar creación aunque el directorio ya exista')
 @click.pass_context
-def create(ctx, project_name, description, path, project_type, interactive, open_cursor):
+def create(ctx, project_name, description, path, output_dir, project_type, interactive, open_cursor, force):
     """
     🎯 Crear un nuevo proyecto
     
     Ejemplos:
     pre-cursor create mi-proyecto
     pre-cursor create mi-api --type "Python Web App (FastAPI)" --description "API REST moderna"
-    pre-cursor create mi-lib --path /ruta/personalizada --open-cursor
+    pre-cursor create mi-lib --output-dir ~/Desktop --open-cursor
+    pre-cursor create mi-app --interactive --force
+    pre-cursor create mi-tool -d "Herramienta CLI" -t "Python CLI Tool" -o ~/Projects
     """
+    import os
     console.print(f"\n🚀 Creando proyecto: [bold blue]{project_name}[/bold blue]")
     
     # Validar nombre del proyecto
@@ -78,12 +83,20 @@ def create(ctx, project_name, description, path, project_type, interactive, open
         console.print("❌ Error: El nombre del proyecto debe contener solo letras minúsculas, números y guiones bajos", style="red")
         sys.exit(1)
     
+    # Determinar ruta de salida (priorizar --output-dir sobre --path)
+    if output_dir:
+        output_path = os.path.join(output_dir, project_name)
+    elif path:
+        output_path = os.path.join(path, project_name) if not path.endswith(project_name) else path
+    else:
+        output_path = None
+    
     if interactive:
         # Modo interactivo mejorado
-        project_path = _interactive_create(project_name, path)
+        project_path = _interactive_create(project_name, output_path, force)
     else:
         # Modo directo mejorado
-        project_path = _direct_create(project_name, description, path, project_type)
+        project_path = _direct_create(project_name, description, output_path, project_type, force)
     
     # Abrir en Cursor si se solicita
     if open_cursor:
@@ -260,9 +273,10 @@ def _get_default_project_path(project_name):
     return os.path.join(current_dir, project_name)
 
 def _open_in_cursor(project_path):
-    """Abrir proyecto en Cursor."""
+    """Abrir proyecto en Cursor con verificación robusta."""
     import subprocess
     import os
+    import shutil
     
     if not os.path.exists(project_path):
         console.print(f"❌ Error: Directorio {project_path} no existe", style="red")
@@ -270,30 +284,48 @@ def _open_in_cursor(project_path):
     
     console.print(f"\n🖥️ Abriendo proyecto en Cursor...")
     
-    try:
-        # Intentar abrir con Cursor
-        subprocess.run(["cursor", project_path], check=True)
-        console.print("✅ Proyecto abierto en Cursor", style="green")
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    # Verificar si cursor está disponible
+    if shutil.which("cursor"):
         try:
-            # Fallback a VS Code
+            subprocess.run(["cursor", project_path], check=True)
+            console.print("✅ Proyecto abierto en Cursor", style="green")
+            return
+        except subprocess.CalledProcessError as e:
+            console.print(f"⚠️ Error al abrir con Cursor: {e}", style="yellow")
+    
+    # Fallback a VS Code
+    if shutil.which("code"):
+        try:
             subprocess.run(["code", project_path], check=True)
             console.print("✅ Proyecto abierto en VS Code", style="green")
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            try:
-                # Fallback a abrir directorio en Finder/Explorer
-                if os.name == 'nt':  # Windows
-                    subprocess.run(["explorer", project_path], check=True)
-                elif os.name == 'posix':  # macOS/Linux
-                    subprocess.run(["open", project_path], check=True)
-                console.print("✅ Directorio abierto en el explorador", style="green")
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                console.print("⚠️ No se pudo abrir automáticamente. Abre manualmente:", style="yellow")
-                console.print(f"   cd {project_path}")
-                console.print("   cursor .")
+            return
+        except subprocess.CalledProcessError as e:
+            console.print(f"⚠️ Error al abrir con VS Code: {e}", style="yellow")
+    
+    # Fallback a abrir directorio en explorador
+    try:
+        if os.name == 'nt':  # Windows
+            subprocess.run(["explorer", project_path], check=True)
+        elif os.name == 'posix':  # macOS/Linux
+            subprocess.run(["open", project_path], check=True)
+        console.print("✅ Directorio abierto en el explorador", style="green")
+        return
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        console.print(f"⚠️ Error al abrir explorador: {e}", style="yellow")
+    
+    # Si todo falla, mostrar instrucciones manuales
+    console.print("⚠️ No se pudo abrir automáticamente. Abre manualmente:", style="yellow")
+    console.print(f"   cd {project_path}")
+    if shutil.which("cursor"):
+        console.print("   cursor .")
+    elif shutil.which("code"):
+        console.print("   code .")
+    else:
+        console.print("   # Instala Cursor o VS Code para abrir automáticamente")
 
-def _interactive_create(project_name, path):
+def _interactive_create(project_name, path, force=False):
     """Modo interactivo mejorado con Rich."""
+    import os
     console.print("\n🎯 Modo interactivo - Configuración del proyecto")
     
     # Seleccionar tipo de proyecto
@@ -324,14 +356,26 @@ def _interactive_create(project_name, path):
         default_path = _get_default_project_path(project_name)
         path = Prompt.ask("Ruta del proyecto", default=default_path)
     
+    # Verificar si el directorio ya existe
+    if os.path.exists(path) and not force:
+        console.print(f"⚠️ El directorio [bold yellow]{path}[/bold yellow] ya existe.", style="yellow")
+        if not Confirm.ask("¿Continuar y sobrescribir el contenido existente?"):
+            console.print("❌ Operación cancelada", style="red")
+            return None
+    elif os.path.exists(path) and force:
+        console.print(f"🔄 Forzando creación en directorio existente: [bold yellow]{path}[/bold yellow]", style="yellow")
+    
     # Confirmar creación
     console.print(f"\n📋 Resumen del proyecto:")
-    console.print(f"   Nombre: {project_name}")
-    console.print(f"   Tipo: {project_type}")
-    console.print(f"   Descripción: {description}")
-    console.print(f"   Ruta: {path}")
+    console.print(f"   📝 Nombre: [bold blue]{project_name}[/bold blue]")
+    console.print(f"   🔧 Tipo: [bold green]{project_type}[/bold green]")
+    console.print(f"   📖 Descripción: [bold white]{description}[/bold white]")
+    console.print(f"   📍 Ruta: [bold green]{path}[/bold green]")
     
-    if Confirm.ask(f"\n¿Crear proyecto '{project_name}'?"):
+    if not force and not Confirm.ask(f"\n¿Crear proyecto '{project_name}'?"):
+        console.print("❌ Operación cancelada", style="red")
+        return None
+    elif force or Confirm.ask(f"\n¿Crear proyecto '{project_name}'?"):
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
@@ -363,27 +407,72 @@ def _interactive_create(project_name, path):
             
             try:
                 generator.generate_project_from_config(Path(temp_config_path), Path(path))
+                progress.update(task, description="✅ Proyecto generado!")
+            except Exception as e:
+                progress.update(task, description="❌ Error en generación")
+                console.print(f"\n❌ Error al generar el proyecto: {e}", style="red")
+                console.print("🔧 Verifica los permisos y la configuración", style="yellow")
+                return None
             finally:
                 # Limpiar archivo temporal
                 import os
-                os.unlink(temp_config_path)
-            progress.update(task, description="✅ Proyecto generado!")
+                try:
+                    os.unlink(temp_config_path)
+                except OSError:
+                    pass  # Ignorar errores al limpiar archivo temporal
         
-        console.print(f"🎉 Proyecto '{project_name}' creado exitosamente!", style="green")
-        console.print(f"📁 Ubicación: {path}")
+        console.print(f"\n🎉 ¡Proyecto '{project_name}' creado exitosamente!", style="green")
+        
+        # Mostrar información del proyecto
+        info_table = Table(show_header=False, box=None, padding=(0, 1))
+        info_table.add_column(style="bold cyan", width=12)
+        info_table.add_column(style="white")
+        
+        info_table.add_row("📁 Ubicación:", path)
+        info_table.add_row("📝 Descripción:", description)
+        info_table.add_row("🔧 Tipo:", project_type)
+        info_table.add_row("👤 Autor:", author)
+        info_table.add_row("📧 Email:", email)
+        info_table.add_row("📅 Creado:", "Hoy")
+        
+        console.print(info_table)
+        
+        # Mostrar próximos pasos detallados
+        console.print(f"\n🚀 Próximos pasos:")
+        steps_table = Table(show_header=False, box=None, padding=(0, 1))
+        steps_table.add_column(style="bold yellow", width=3)
+        steps_table.add_column(style="white")
+        
+        steps_table.add_row("1️⃣", f"cd {path}")
+        steps_table.add_row("2️⃣", "pip install -r requirements.txt")
+        steps_table.add_row("3️⃣", "git remote add origin <URL_de_tu_repo>")
+        steps_table.add_row("4️⃣", "cursor .  # o code .")
+        steps_table.add_row("5️⃣", "¡Empieza a desarrollar!")
+        
+        console.print(steps_table)
         
         return path
     else:
         console.print("❌ Operación cancelada", style="red")
         return None
 
-def _direct_create(project_name, description, path, project_type):
+def _direct_create(project_name, description, path, project_type, force=False):
     """Modo directo mejorado."""
+    import os
     generator = ProjectGenerator()
     
     # Determinar ruta del proyecto
     if not path:
         path = _get_default_project_path(project_name)
+    
+    # Verificar si el directorio ya existe
+    if os.path.exists(path) and not force:
+        console.print(f"⚠️ El directorio [bold yellow]{path}[/bold yellow] ya existe.", style="yellow")
+        if not Confirm.ask("¿Continuar y sobrescribir el contenido existente?"):
+            console.print("❌ Operación cancelada", style="red")
+            return None
+    elif os.path.exists(path) and force:
+        console.print(f"🔄 Forzando creación en directorio existente: [bold yellow]{path}[/bold yellow]", style="yellow")
     
     # Solicitar descripción si no se proporciona
     if not description:
@@ -394,7 +483,16 @@ def _direct_create(project_name, description, path, project_type):
     if not project_type:
         project_type = "Python Library"
     
-    console.print(f"📍 Ubicación: [bold green]{path}[/bold green]")
+    # Mostrar resumen y confirmar
+    console.print(f"\n📋 Resumen del proyecto:")
+    console.print(f"   📝 Nombre: [bold blue]{project_name}[/bold blue]")
+    console.print(f"   📖 Descripción: [bold white]{description}[/bold white]")
+    console.print(f"   🔧 Tipo: [bold green]{project_type}[/bold green]")
+    console.print(f"   📍 Ubicación: [bold green]{path}[/bold green]")
+    
+    if not force and not Confirm.ask(f"\n¿Crear proyecto '{project_name}'?"):
+        console.print("❌ Operación cancelada", style="red")
+        return None
     
     with Progress(
         SpinnerColumn(),
@@ -426,22 +524,61 @@ def _direct_create(project_name, description, path, project_type):
         
         try:
             generator.generate_project_from_config(Path(temp_config_path), Path(path))
+            progress.update(task, description="✅ Proyecto generado!")
+        except Exception as e:
+            progress.update(task, description="❌ Error en generación")
+            console.print(f"\n❌ Error al generar el proyecto: {e}", style="red")
+            console.print("🔧 Verifica los permisos y la configuración", style="yellow")
+            return None
         finally:
             # Limpiar archivo temporal
             import os
-            os.unlink(temp_config_path)
-        progress.update(task, description="✅ Proyecto generado!")
+            try:
+                os.unlink(temp_config_path)
+            except OSError:
+                pass  # Ignorar errores al limpiar archivo temporal
     
-    console.print(f"🎉 Proyecto '{project_name}' creado exitosamente!", style="green")
-    console.print(f"📁 Ubicación: {path}")
-    console.print(f"📝 Descripción: {description}")
-    console.print(f"🔧 Tipo: {project_type}")
+    console.print(f"\n🎉 ¡Proyecto '{project_name}' creado exitosamente!", style="green")
     
-    # Mostrar próximos pasos
+    # Mostrar información del proyecto
+    info_table = Table(show_header=False, box=None, padding=(0, 1))
+    info_table.add_column(style="bold cyan", width=12)
+    info_table.add_column(style="white")
+    
+    info_table.add_row("📁 Ubicación:", path)
+    info_table.add_row("📝 Descripción:", description)
+    info_table.add_row("🔧 Tipo:", project_type)
+    info_table.add_row("📅 Creado:", "Hoy")
+    
+    console.print(info_table)
+    
+    # Mostrar próximos pasos detallados
     console.print(f"\n🚀 Próximos pasos:")
-    console.print(f"   cd {path}")
-    console.print(f"   pip install -r requirements.txt")
-    console.print(f"   cursor .")
+    steps_table = Table(show_header=False, box=None, padding=(0, 1))
+    steps_table.add_column(style="bold yellow", width=3)
+    steps_table.add_column(style="white")
+    
+    steps_table.add_row("1️⃣", f"cd {path}")
+    steps_table.add_row("2️⃣", "pip install -r requirements.txt")
+    steps_table.add_row("3️⃣", "git remote add origin <URL_de_tu_repo>")
+    steps_table.add_row("4️⃣", "cursor .  # o code .")
+    steps_table.add_row("5️⃣", "¡Empieza a desarrollar!")
+    
+    console.print(steps_table)
+    
+    # Mostrar archivos importantes
+    console.print(f"\n📚 Archivos importantes:")
+    files_table = Table(show_header=False, box=None, padding=(0, 1))
+    files_table.add_column(style="bold blue", width=20)
+    files_table.add_column(style="white")
+    
+    files_table.add_row("📖 README.md", "Documentación principal")
+    files_table.add_row("📋 TUTORIAL.md", "Guía paso a paso")
+    files_table.add_row("📝 BITACORA.md", "Registro de cambios")
+    files_table.add_row("🔧 requirements.txt", "Dependencias Python")
+    files_table.add_row("⚙️ .gitignore", "Archivos ignorados por Git")
+    
+    console.print(files_table)
     
     return path
 
