@@ -180,7 +180,8 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 ## 👨‍💻 Autor
 
-**Sistema de Generación Automática**
+**Assiz Alcaraz Baxter**
+- Gemini 2.5 revisor, Cursor Pro IDE
 - Basado en metodología establecida en proyectos anteriores
 
 ---

@@ -9,10 +9,10 @@ description = "Generador de proyectos optimizado para agentes de IA"
 readme = "README.md"
 license = "MIT"
 authors = [
-    {name = "Sistema de Generación Automática", email = "contact@pre-cursor.dev"}
+    {name = "Assiz Alcaraz Baxter", email = "assiz@pre-cursor.dev"}
 ]
 maintainers = [
-    {name = "Sistema de Generación Automática", email = "contact@pre-cursor.dev"}
+    {name = "Assiz Alcaraz Baxter", email = "assiz@pre-cursor.dev"}
 ]
 keywords = ["python", "project-generator", "ai", "fastapi", "touchdesigner", "mcp"]
 classifiers = [
