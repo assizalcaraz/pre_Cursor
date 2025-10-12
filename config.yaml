@@ -1,0 +1,44 @@
+# Configuración por defecto para Pre-Cursor CLI
+# Archivo: ~/.pre-cursor/config.yaml
+
+# Configuración global
+defaults:
+  author: "Tu Nombre"
+  email: "tu@email.com"
+  github_user: "tu_usuario"
+  license: "MIT"
+  python_version_min: "3.8"
+
+# Configuraciones por tipo de proyecto
+project_types:
+  "Python Library":
+    dependencies:
+      main: ["pydantic>=2.0.0", "click>=8.0.0"]
+      dev: ["pytest>=7.0.0", "black>=22.0.0", "flake8>=5.0.0"]
+    
+  "Python Web App (FastAPI)":
+    dependencies:
+      main: ["fastapi>=0.100.0", "uvicorn[standard]>=0.23.0", "pydantic>=2.0.0"]
+      dev: ["pytest>=7.0.0", "pytest-asyncio>=0.21.0", "httpx>=0.24.0"]
+    
+  "TD_MCP Project":
+    dependencies:
+      main: ["mcp>=1.0.0", "asyncio-mqtt>=0.13.0", "websockets>=11.0.0"]
+      dev: ["pytest>=7.0.0", "pytest-asyncio>=0.21.0"]
+
+# Configuración de templates
+templates:
+  base_path: "./templates"
+  output_path: "./generated"
+  
+# Configuración de Git
+git:
+  auto_init: true
+  initial_branch: "main"
+  add_readme: true
+  
+# Configuración de logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "pre_cursor.log"

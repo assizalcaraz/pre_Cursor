@@ -16,13 +16,17 @@
 git clone <URL_DEL_REPOSITORIO>
 cd pre_cursor
 
-# Modo interactivo
-python3 init_project.py
+# Instalar en modo desarrollo
+pip install -e ".[dev]"
 
-# Modo directo
+# CLI mejorado (recomendado)
+pre-cursor create MiNuevoProyecto
+pre-cursor create mi-api --type "Python Web App (FastAPI)"
+pre-cursor template --type "Python Library"
+pre-cursor list-types
+
+# CLI legacy (compatible)
 python3 init_project.py MiNuevoProyecto
-
-# Usar archivo de configuración
 python3 init_project.py --config mi_config.json
 ```
 
@@ -35,6 +39,77 @@ generator = ProjectGenerator()
 
 # Generar proyecto
 generator.generate_project("MiProyecto")
+```
+
+---
+
+## 🎯 CLI Mejorado
+
+Pre-Cursor incluye una interfaz de línea de comandos moderna y profesional con las siguientes características:
+
+### ✨ Características del CLI
+- **Subcomandos especializados**: `create`, `template`, `generate`, `list-types`, `info`
+- **Autocompletado**: Soporte completo para bash/zsh
+- **Interfaz Rich**: Tablas, paneles y colores para mejor experiencia
+- **Modo interactivo**: Configuración guiada paso a paso
+- **Dry-run**: Simulación sin crear archivos
+- **Configuración flexible**: Soporte para JSON y YAML
+
+### 🚀 Comandos Principales
+
+#### Crear Proyectos
+```bash
+# Crear proyecto básico
+pre-cursor create mi-proyecto
+
+# Crear con tipo específico
+pre-cursor create mi-api --type "Python Web App (FastAPI)"
+
+# Modo interactivo
+pre-cursor create mi-proyecto --interactive
+
+# En ruta específica
+pre-cursor create mi-proyecto --path /ruta/personalizada
+```
+
+#### Plantillas y Configuración
+```bash
+# Crear plantilla
+pre-cursor template --type "Python Library"
+
+# Crear plantilla YAML
+pre-cursor template --type "TD_MCP Project" --format yaml --output mi_config.yaml
+
+# Generar desde configuración
+pre-cursor generate mi_config.json
+
+# Simular generación
+pre-cursor generate config.yaml --dry-run
+```
+
+#### Información y Ayuda
+```bash
+# Listar tipos disponibles
+pre-cursor list-types
+
+# Información del proyecto
+pre-cursor info --examples
+
+# Ayuda general
+pre-cursor --help
+
+# Ayuda de comando específico
+pre-cursor create --help
+```
+
+### 🔧 Configurar Autocompletado
+```bash
+# Activar autocompletado
+source completion.sh
+
+# Ahora puedes usar TAB para autocompletar
+pre-cursor <TAB>  # Verá: create template generate list-types info
+pre-cursor create <TAB>  # Verá opciones del comando create
 ```
 
 ---
