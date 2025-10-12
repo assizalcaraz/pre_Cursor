@@ -1,0 +1,1 @@
+🚀 Pre-Cursor: Generador de proyectos optimizado para agentes de IA. Crea estructuras completas con metodología establecida, soporte para Python, FastAPI, TD_MCP y más. Un comando, proyecto completo. #Python #FastAPI #TouchDesigner #MCP #AI
