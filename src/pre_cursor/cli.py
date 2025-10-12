@@ -49,6 +49,7 @@ def cli(ctx, verbose, config):
 
 @cli.command()
 @click.argument('project_name')
+@click.option('--description', '-d', help='Descripción del proyecto')
 @click.option('--path', '-p', type=click.Path(), help='Ruta donde crear el proyecto')
 @click.option('--type', '-t', 'project_type', 
               type=click.Choice([
@@ -59,24 +60,34 @@ def cli(ctx, verbose, config):
               ]),
               help='Tipo de proyecto')
 @click.option('--interactive', '-i', is_flag=True, help='Modo interactivo')
+@click.option('--open-cursor', is_flag=True, help='Abrir proyecto en Cursor al finalizar')
 @click.pass_context
-def create(ctx, project_name, path, project_type, interactive):
+def create(ctx, project_name, description, path, project_type, interactive, open_cursor):
     """
     🎯 Crear un nuevo proyecto
     
     Ejemplos:
     pre-cursor create mi-proyecto
-    pre-cursor create mi-api --type "Python Web App (FastAPI)"
-    pre-cursor create mi-lib --path /ruta/personalizada
+    pre-cursor create mi-api --type "Python Web App (FastAPI)" --description "API REST moderna"
+    pre-cursor create mi-lib --path /ruta/personalizada --open-cursor
     """
     console.print(f"\n🚀 Creando proyecto: [bold blue]{project_name}[/bold blue]")
     
+    # Validar nombre del proyecto
+    if not _validate_project_name(project_name):
+        console.print("❌ Error: El nombre del proyecto debe contener solo letras minúsculas, números y guiones bajos", style="red")
+        sys.exit(1)
+    
     if interactive:
         # Modo interactivo mejorado
-        _interactive_create(project_name, path)
+        project_path = _interactive_create(project_name, path)
     else:
-        # Modo directo
-        _direct_create(project_name, path, project_type)
+        # Modo directo mejorado
+        project_path = _direct_create(project_name, description, path, project_type)
+    
+    # Abrir en Cursor si se solicita
+    if open_cursor or interactive:
+        _open_in_cursor(project_path)
 
 @cli.command()
 @click.option('--type', '-t', 'project_type',
@@ -211,6 +222,57 @@ def info(examples):
         console.print("• pre-cursor template --type 'Python Library'")
         console.print("• pre-cursor generate mi_config.json")
 
+def _validate_project_name(name):
+    """Validar nombre del proyecto."""
+    import re
+    return bool(re.match(r'^[a-z0-9_]+$', name))
+
+def _get_default_project_path(project_name):
+    """Obtener ruta por defecto para el proyecto."""
+    import os
+    home = os.path.expanduser("~")
+    
+    # Intentar directorios comunes de proyectos
+    possible_paths = [
+        os.path.join(home, "Desktop"),
+        os.path.join(home, "Documents"),
+        os.path.join(home, "Projects"),
+        os.path.join(home, "Developer"),
+        os.getcwd()
+    ]
+    
+    for path in possible_paths:
+        if os.path.exists(path) and os.access(path, os.W_OK):
+            return os.path.join(path, project_name)
+    
+    # Fallback al directorio actual
+    return os.path.join(os.getcwd(), project_name)
+
+def _open_in_cursor(project_path):
+    """Abrir proyecto en Cursor."""
+    import subprocess
+    import os
+    
+    if not os.path.exists(project_path):
+        console.print(f"❌ Error: Directorio {project_path} no existe", style="red")
+        return
+    
+    console.print(f"\n🖥️ Abriendo proyecto en Cursor...")
+    
+    try:
+        # Intentar abrir con Cursor
+        subprocess.run(["cursor", project_path], check=True)
+        console.print("✅ Proyecto abierto en Cursor", style="green")
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        try:
+            # Fallback a VS Code
+            subprocess.run(["code", project_path], check=True)
+            console.print("✅ Proyecto abierto en VS Code", style="green")
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            console.print("⚠️ No se pudo abrir automáticamente. Abre manualmente:", style="yellow")
+            console.print(f"   cd {project_path}")
+            console.print("   cursor .")
+
 def _interactive_create(project_name, path):
     """Modo interactivo mejorado con Rich."""
     console.print("\n🎯 Modo interactivo - Configuración del proyecto")
@@ -238,8 +300,19 @@ def _interactive_create(project_name, path):
     author = Prompt.ask("Autor", default="Tu Nombre")
     email = Prompt.ask("Email", default="tu@email.com")
     
+    # Determinar ruta del proyecto
+    if not path:
+        default_path = _get_default_project_path(project_name)
+        path = Prompt.ask("Ruta del proyecto", default=default_path)
+    
     # Confirmar creación
-    if Confirm.ask(f"\n¿Crear proyecto '{project_name}' de tipo '{project_type}'?"):
+    console.print(f"\n📋 Resumen del proyecto:")
+    console.print(f"   Nombre: {project_name}")
+    console.print(f"   Tipo: {project_type}")
+    console.print(f"   Descripción: {description}")
+    console.print(f"   Ruta: {path}")
+    
+    if Confirm.ask(f"\n¿Crear proyecto '{project_name}'?"):
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
@@ -248,16 +321,58 @@ def _interactive_create(project_name, path):
             task = progress.add_task("Generando proyecto...", total=None)
             
             generator = ProjectGenerator()
-            # Aquí iría la lógica de generación
+            # Crear configuración temporal
+            config_data = {
+                "project_name": project_name,
+                "description": description,
+                "project_type": project_type,
+                "author": author,
+                "email": email,
+                "python_version_min": "3.8",
+                "license": "MIT"
+            }
+            
+            # Generar proyecto
+            import tempfile
+            import json
+            from pathlib import Path
+            
+            # Crear archivo temporal de configuración
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+                json.dump(config_data, f, indent=2)
+                temp_config_path = f.name
+            
+            try:
+                generator.generate_project_from_config(Path(temp_config_path), Path(path))
+            finally:
+                # Limpiar archivo temporal
+                import os
+                os.unlink(temp_config_path)
             progress.update(task, description="✅ Proyecto generado!")
         
         console.print(f"🎉 Proyecto '{project_name}' creado exitosamente!", style="green")
+        console.print(f"📁 Ubicación: {path}")
+        
+        return path
     else:
         console.print("❌ Operación cancelada", style="red")
+        return None
 
-def _direct_create(project_name, path, project_type):
-    """Modo directo simplificado."""
+def _direct_create(project_name, description, path, project_type):
+    """Modo directo mejorado."""
     generator = ProjectGenerator()
+    
+    # Determinar ruta del proyecto
+    if not path:
+        path = _get_default_project_path(project_name)
+    
+    # Usar descripción por defecto si no se proporciona
+    if not description:
+        description = f"Proyecto {project_name} generado con Pre-Cursor"
+    
+    # Usar tipo por defecto si no se proporciona
+    if not project_type:
+        project_type = "Python Library"
     
     with Progress(
         SpinnerColumn(),
@@ -266,10 +381,39 @@ def _direct_create(project_name, path, project_type):
     ) as progress:
         task = progress.add_task("Generando proyecto...", total=None)
         
-        # Aquí iría la lógica de generación directa
+        # Crear configuración temporal
+        config_data = {
+            "project_name": project_name,
+            "description": description,
+            "project_type": project_type,
+            "author": "Tu Nombre",
+            "email": "tu@email.com",
+            "python_version_min": "3.8",
+            "license": "MIT"
+        }
+        
+        # Generar proyecto
+        import tempfile
+        import json
+        from pathlib import Path
+        
+        # Crear archivo temporal de configuración
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(config_data, f, indent=2)
+            temp_config_path = f.name
+        
+        try:
+            generator.generate_project_from_config(Path(temp_config_path), Path(path))
+        finally:
+            # Limpiar archivo temporal
+            import os
+            os.unlink(temp_config_path)
         progress.update(task, description="✅ Proyecto generado!")
     
     console.print(f"🎉 Proyecto '{project_name}' creado exitosamente!", style="green")
+    console.print(f"📁 Ubicación: {path}")
+    
+    return path
 
 def _show_config_preview(config_data):
     """Mostrar preview de la configuración."""
