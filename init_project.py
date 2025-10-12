@@ -759,6 +759,7 @@ class ProjectGenerator:
             'EJEMPLO_2_TITULO': 'Configuración avanzada',
             'EJEMPLO_2_DESCRIPCION': 'Ejemplo de configuración avanzada',
             'EJEMPLO_2_CODIGO': 'config = {"debug": True}\ninstancia = ClasePrincipal(config)\nresultado = instancia.procesar()',
+            'EJEMPLO_USO_MAIN': '# Crear instancia\ninstancia = ClasePrincipal()\n# Usar funcionalidad\nresultado = instancia.procesar()',
             'VARIABLE_1': 'DEBUG',
             'VALOR_1': 'true',
             'VARIABLE_2': 'LOG_LEVEL',
