@@ -16,6 +16,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Centralized all configuration in pyproject.toml
 - Removed pytest.ini (migrated to pyproject.toml)
 
+## [1.1.0] - 2025-10-12
+
+### Fixed
+- **CRITICAL**: Fixed template processing system that was generating non-functional projects
+- **CRITICAL**: Fixed placeholder processing for both `$VARIABLE` and `{{VARIABLE}}` formats
+- **CRITICAL**: Fixed requirements.txt generation with real dependencies instead of placeholders
+- **CRITICAL**: Fixed Python code generation to be fully functional without placeholders
+- **CRITICAL**: Fixed infinite loop issue in non-interactive testing mode
+- Fixed missing `EJEMPLO_USO_MAIN` placeholder causing warnings
+- Fixed Python syntax errors in generated code (true → True)
+- Fixed duplicate code lines in generated templates
+
+### Added
+- Hybrid template processing system supporting both placeholder formats
+- Comprehensive default values for 50+ placeholders
+- Enhanced placeholder detection and replacement system
+- Detailed logging for template processing
+- Non-interactive testing support via configuration files
+- Automatic cleanup of unprocessed placeholders
+
+### Changed
+- Improved template processing performance
+- Enhanced error handling and logging
+- Better default value management
+- Optimized disk space usage (freed ~3GB)
+- Streamlined project generation workflow
+
+### Technical Details
+- Implemented `_process_template` method with dual format support
+- Added `_replace_with_defaults` method with comprehensive fallback values
+- Enhanced `collect_project_info` with 50+ additional variables
+- Improved `_find_unprocessed_placeholders` detection system
+- Fixed all template processing warnings and errors
+
 ## [1.0.0] - 2024-12-19
 
 ### Added

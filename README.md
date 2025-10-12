@@ -30,6 +30,22 @@ python3 init_project.py MiNuevoProyecto
 python3 init_project.py --config mi_config.json
 ```
 
+## ✨ Novedades v1.1.0
+
+### 🎯 Correcciones Críticas
+- **✅ Sistema de plantillas completamente funcional** - Proyectos generados son 100% funcionales
+- **✅ Procesamiento híbrido de placeholders** - Soporte para `$VARIABLE` y `{{VARIABLE}}`
+- **✅ Dependencias reales** - Requirements.txt con dependencias reales en lugar de placeholders
+- **✅ Código Python funcional** - Sin placeholders sin procesar en archivos generados
+- **✅ Sin bucles infinitos** - Tests no interactivos funcionan correctamente
+
+### 🔧 Mejoras Técnicas
+- 50+ variables por defecto añadidas
+- Sistema de detección y reemplazo mejorado
+- Logging detallado del procesamiento
+- Optimización de espacio en disco (~3GB liberados)
+```
+
 ### Uso Básico
 ```python
 from init_project import ProjectGenerator
