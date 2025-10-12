@@ -1,0 +1,50 @@
+{
+    "project_name": "mi_proyecto_td_mcp",
+    "description": "Servidor MCP para TouchDesigner",
+    "detailed_description": "Un servidor MCP (Model Context Protocol) diseñado específicamente para integrar TouchDesigner con agentes de IA, permitiendo comunicación bidireccional y control en tiempo real.",
+    "project_type": "TD_MCP Project",
+    "author": "Tu Nombre",
+    "email": "tu@email.com",
+    "github_user": "tu_usuario",
+    "repository_url": "https://github.com/tu_usuario/mi_proyecto_td_mcp",
+    "python_version_min": "3.8",
+    "license": "MIT",
+    "objective": "Crear un servidor MCP robusto para TouchDesigner",
+    "main_functionality": "Servidor MCP para TouchDesigner",
+    "dependencies": {
+        "main": [
+            "mcp>=1.0.0",
+            "asyncio-mqtt>=0.13.0",
+            "websockets>=11.0.0",
+            "pydantic>=2.0.0",
+            "aiofiles>=23.0.0"
+        ],
+        "development": [
+            "pytest>=7.0.0",
+            "pytest-cov>=4.0.0",
+            "black>=22.0.0",
+            "flake8>=5.0.0",
+            "pytest-asyncio>=0.21.0"
+        ],
+        "testing": [
+            "pytest>=7.0.0",
+            "pytest-cov>=4.0.0",
+            "pytest-asyncio>=0.21.0"
+        ],
+        "optional": [
+            "requests>=2.28.0",
+            "numpy>=1.21.0",
+            "opencv-python>=4.7.0"
+        ]
+    },
+    "features": [
+        "Servidor MCP básico",
+        "Conexión con TouchDesigner",
+        "Sistema de logging",
+        "Manejo de errores",
+        "Comunicación WebSocket",
+        "Procesamiento de archivos TOX",
+        "Integración con TouchEngine SDK"
+    ],
+    "keywords": "python, mcp, touchdesigner, server, websocket, ai-integration"
+}

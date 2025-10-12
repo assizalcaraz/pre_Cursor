@@ -1,0 +1,57 @@
+{
+    "project_name": "mi_api_fastapi",
+    "description": "API REST moderna con FastAPI",
+    "detailed_description": "Una API REST completa construida con FastAPI que incluye autenticación, documentación automática, validación de datos y manejo de errores robusto.",
+    "project_type": "Python Web App (FastAPI)",
+    "author": "Tu Nombre",
+    "email": "tu@email.com",
+    "github_user": "tu_usuario",
+    "repository_url": "https://github.com/tu_usuario/mi_api_fastapi",
+    "python_version_min": "3.9",
+    "license": "MIT",
+    "objective": "Crear una API REST escalable y bien documentada",
+    "main_functionality": "API REST con FastAPI",
+    "dependencies": {
+        "main": [
+            "fastapi>=0.100.0",
+            "uvicorn[standard]>=0.23.0",
+            "pydantic>=2.0.0",
+            "sqlalchemy>=2.0.0",
+            "alembic>=1.11.0",
+            "python-jose[cryptography]>=3.3.0",
+            "passlib[bcrypt]>=1.7.4",
+            "python-multipart>=0.0.6"
+        ],
+        "development": [
+            "pytest>=7.0.0",
+            "pytest-asyncio>=0.21.0",
+            "httpx>=0.24.0",
+            "black>=22.0.0",
+            "flake8>=5.0.0",
+            "mypy>=0.950"
+        ],
+        "testing": [
+            "pytest>=7.0.0",
+            "pytest-asyncio>=0.21.0",
+            "httpx>=0.24.0",
+            "pytest-cov>=4.0.0"
+        ],
+        "optional": [
+            "redis>=4.5.0",
+            "celery>=5.3.0",
+            "prometheus-client>=0.17.0"
+        ]
+    },
+    "features": [
+        "API REST con FastAPI",
+        "Autenticación JWT",
+        "Documentación automática (Swagger/OpenAPI)",
+        "Validación de datos con Pydantic",
+        "Base de datos con SQLAlchemy",
+        "Migraciones con Alembic",
+        "Manejo de errores personalizado",
+        "Logging estructurado",
+        "Tests automatizados"
+    ],
+    "keywords": "python, fastapi, api, rest, sqlalchemy, authentication"
+}

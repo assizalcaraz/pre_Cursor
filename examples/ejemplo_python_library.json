@@ -1,0 +1,47 @@
+{
+    "project_name": "mi_libreria_python",
+    "description": "Una librería Python para procesamiento de datos",
+    "detailed_description": "Esta librería proporciona herramientas para procesar y analizar datos de manera eficiente, incluyendo funciones para limpieza, transformación y visualización de datos.",
+    "project_type": "Python Library",
+    "author": "Tu Nombre",
+    "email": "tu@email.com",
+    "github_user": "tu_usuario",
+    "repository_url": "https://github.com/tu_usuario/mi_libreria_python",
+    "python_version_min": "3.8",
+    "license": "MIT",
+    "objective": "Crear una librería robusta para procesamiento de datos",
+    "main_functionality": "Procesamiento y análisis de datos",
+    "dependencies": {
+        "main": [
+            "pandas>=1.3.0",
+            "numpy>=1.21.0",
+            "matplotlib>=3.4.0",
+            "seaborn>=0.11.0"
+        ],
+        "development": [
+            "pytest>=7.0.0",
+            "pytest-cov>=4.0.0",
+            "black>=22.0.0",
+            "flake8>=5.0.0",
+            "mypy>=0.950"
+        ],
+        "testing": [
+            "pytest>=7.0.0",
+            "pytest-cov>=4.0.0",
+            "pytest-mock>=3.7.0"
+        ],
+        "optional": [
+            "jupyter>=1.0.0",
+            "plotly>=5.0.0",
+            "scikit-learn>=1.0.0"
+        ]
+    },
+    "features": [
+        "Procesamiento de datos CSV/Excel",
+        "Visualización de datos",
+        "Análisis estadístico básico",
+        "Sistema de logging robusto",
+        "Manejo de errores personalizado"
+    ],
+    "keywords": "python, data-processing, pandas, visualization, analysis"
+}
