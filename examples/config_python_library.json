@@ -1,0 +1,39 @@
+{
+  "project_name": "mi-proyecto-ejemplo",
+  "description": "Un proyecto de ejemplo generado automáticamente",
+  "detailed_description": "Este es un proyecto de ejemplo que demuestra las capacidades del generador de proyectos.",
+  "project_type": "Python Library",
+  "author": "Tu Nombre",
+  "email": "tu@email.com",
+  "github_user": "tu_usuario",
+  "repository_url": "",
+  "python_version_min": "3.8",
+  "license": "MIT",
+  "objective": "Demostrar la generación automática de proyectos",
+  "main_functionality": "Procesamiento de datos",
+  "dependencies": {
+    "main": [
+      "requests>=2.28.0"
+    ],
+    "development": [
+      "pytest>=7.0.0",
+      "black>=22.0.0"
+    ],
+    "testing": [
+      "pytest>=7.0.0",
+      "pytest-cov>=4.0.0"
+    ],
+    "optional": [
+      "numpy>=1.21.0"
+    ]
+  },
+  "features": [
+    "Funcionalidad principal",
+    "Sistema de logging",
+    "Manejo de errores"
+  ],
+  "custom_templates": {},
+  "git_init": true,
+  "create_context": true,
+  "verbose": false
+}

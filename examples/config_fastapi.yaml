@@ -1,0 +1,32 @@
+author: Tu Nombre
+create_context: true
+custom_templates: {}
+dependencies:
+  development:
+  - pytest>=7.0.0
+  - black>=22.0.0
+  main:
+  - requests>=2.28.0
+  optional:
+  - numpy>=1.21.0
+  testing:
+  - pytest>=7.0.0
+  - pytest-cov>=4.0.0
+description: Un proyecto de ejemplo generado automáticamente
+detailed_description: Este es un proyecto de ejemplo que demuestra las capacidades
+  del generador de proyectos.
+email: tu@email.com
+features:
+- Funcionalidad principal
+- Sistema de logging
+- Manejo de errores
+git_init: true
+github_user: tu_usuario
+license: MIT
+main_functionality: Procesamiento de datos
+objective: Demostrar la generación automática de proyectos
+project_name: mi-proyecto-ejemplo
+project_type: Python Web App (FastAPI)
+python_version_min: '3.8'
+repository_url: ''
+verbose: false
