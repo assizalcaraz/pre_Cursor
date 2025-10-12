@@ -29,7 +29,7 @@ from init_project import ProjectGenerator
 console = Console()
 
 @click.group()
-@click.version_option(version="1.0.0", prog_name="pre-cursor")
+@click.version_option(version="1.0.1", prog_name="pre-cursor")
 @click.option('--verbose', '-v', is_flag=True, help='Activar modo verbose')
 @click.option('--config', '-c', type=click.Path(exists=True), help='Archivo de configuración')
 @click.pass_context
