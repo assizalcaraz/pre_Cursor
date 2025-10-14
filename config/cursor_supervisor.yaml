@@ -1,0 +1,123 @@
+# Configuración del Cursor Supervisor
+# Archivo: config/cursor_supervisor.yaml
+
+# Configuración general
+supervisor:
+  # Intervalo de supervisión en segundos
+  check_interval: 300  # 5 minutos
+  
+  # Número máximo de problemas antes de alertar
+  max_issues: 10
+  
+  # Habilitar corrección automática de problemas simples
+  auto_fix: true
+  
+  # Nivel de logging
+  log_level: "INFO"
+  
+  # Archivos y directorios a ignorar
+  ignore_patterns:
+    - "*.pyc"
+    - "__pycache__/"
+    - ".git/"
+    - "node_modules/"
+    - "*.log"
+    - ".DS_Store"
+
+# Configuración del generador
+generator:
+  # Timeout para operaciones de generación (segundos)
+  timeout: 3600  # 1 hora
+  
+  # Número de intentos en caso de fallo
+  retry_attempts: 3
+  
+  # Habilitar respaldo automático antes de generar
+  backup_enabled: true
+  
+  # Directorio de respaldos
+  backup_dir: "backups/"
+
+# Configuración de detección de problemas
+detection:
+  # Habilitar detección de archivos fuera de lugar
+  check_misplaced_files: true
+  
+  # Habilitar detección de duplicados
+  check_duplicates: true
+  
+  # Habilitar verificación de estructura
+  check_structure: true
+  
+  # Patrones de archivos problemáticos
+  problematic_patterns:
+    - "*_test.py"  # Tests en raíz
+    - "*config*.py"  # Config en src/
+    - "temp_*"  # Archivos temporales
+    - "*.tmp"  # Archivos temporales
+
+# Configuración de notificaciones
+notifications:
+  # Habilitar notificaciones en consola
+  console: true
+  
+  # Habilitar logging a archivo
+  file_logging: true
+  
+  # Archivo de log del supervisor
+  log_file: "logs/supervisor.log"
+  
+  # Archivo de log de problemas
+  issues_log: "logs/issues.log"
+
+# Configuración de corrección automática
+auto_fix:
+  # Habilitar corrección automática
+  enabled: true
+  
+  # Tipos de problemas que se pueden corregir automáticamente
+  fixable_issues:
+    - "missing_directory"
+    - "misplaced_files"
+  
+  # Crear respaldo antes de corregir
+  backup_before_fix: true
+
+# Configuración de integración con Cursor
+cursor:
+  # Ruta al ejecutable de Cursor (si no está en PATH)
+  executable_path: "cursor"
+  
+  # Argumentos adicionales para Cursor
+  extra_args: []
+  
+  # Timeout para comandos de Cursor
+  command_timeout: 30
+  
+  # Habilitar modo verbose
+  verbose: false
+
+# Configuración de métricas
+metrics:
+  # Habilitar recolección de métricas
+  enabled: true
+  
+  # Archivo de métricas
+  metrics_file: "logs/metrics.json"
+  
+  # Intervalo de recolección de métricas (segundos)
+  collection_interval: 600  # 10 minutos
+
+# Configuración de alertas
+alerts:
+  # Habilitar alertas por problemas críticos
+  critical_alerts: true
+  
+  # Habilitar alertas por problemas de alta prioridad
+  high_priority_alerts: true
+  
+  # Umbral para alertas de duplicados
+  duplicate_threshold: 5
+  
+  # Umbral para alertas de archivos fuera de lugar
+  misplaced_threshold: 3
