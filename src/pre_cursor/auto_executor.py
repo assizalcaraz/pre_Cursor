@@ -48,6 +48,14 @@ class AutoExecutor:
                 return self._execute_reorganize_structure(instruction)
             elif instruction.action == "fix_duplicates":
                 return self._execute_fix_duplicates(instruction)
+            elif instruction.action == "create_tests_dir":
+                return self._execute_create_tests_dir(instruction)
+            elif instruction.action == "rename_test_files":
+                return self._execute_rename_test_files(instruction)
+            elif instruction.action == "unify_test_functions":
+                return self._execute_unify_test_functions(instruction)
+            elif instruction.action == "add_test_imports":
+                return self._execute_add_test_imports(instruction)
             else:
                 logger.warning(f"Acción no soportada: {instruction.action}")
                 return {
@@ -203,6 +211,186 @@ class AutoExecutor:
             
         except Exception as e:
             logger.error(f"Error eliminando duplicados: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "changes_made": changes_made
+            }
+    
+    def _execute_create_tests_dir(self, instruction: CursorInstruction) -> Dict[str, Any]:
+        """Crear directorio tests/ con archivo __init__.py"""
+        changes_made = []
+        
+        try:
+            tests_dir = self.project_path / "tests"
+            
+            if not tests_dir.exists():
+                tests_dir.mkdir(exist_ok=True)
+                changes_made.append("Creado directorio tests/")
+                logger.info("Directorio tests/ creado")
+            
+            # Crear __init__.py si no existe
+            init_file = tests_dir / "__init__.py"
+            if not init_file.exists():
+                init_file.write_text("# Tests package\n")
+                changes_made.append("Creado tests/__init__.py")
+                logger.info("Archivo tests/__init__.py creado")
+            
+            return {
+                "success": True,
+                "message": f"Directorio tests/ configurado correctamente",
+                "changes_made": changes_made
+            }
+            
+        except Exception as e:
+            logger.error(f"Error creando directorio tests: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "changes_made": changes_made
+            }
+    
+    def _execute_rename_test_files(self, instruction: CursorInstruction) -> Dict[str, Any]:
+        """Renombrar archivos de test para usar nomenclatura consistente"""
+        changes_made = []
+        
+        try:
+            tests_dir = self.project_path / "tests"
+            if not tests_dir.exists():
+                return {
+                    "success": False,
+                    "error": "Directorio tests/ no existe",
+                    "changes_made": []
+                }
+            
+            # Buscar archivos con nomenclatura inconsistente
+            inconsistent_files = []
+            for file_path in tests_dir.glob("*.py"):
+                if not (file_path.name.startswith('test_') or file_path.name.endswith('_test.py')):
+                    inconsistent_files.append(file_path)
+            
+            for file_path in inconsistent_files:
+                # Renombrar a test_*.py
+                new_name = f"test_{file_path.name}"
+                new_path = file_path.parent / new_name
+                
+                # Verificar que no exista ya
+                counter = 1
+                while new_path.exists():
+                    name_parts = file_path.stem, counter, file_path.suffix
+                    new_name = f"test_{name_parts[0]}_{name_parts[1]}{name_parts[2]}"
+                    new_path = file_path.parent / new_name
+                    counter += 1
+                
+                file_path.rename(new_path)
+                changes_made.append(f"Renombrado {file_path.name} -> {new_name}")
+                logger.info(f"Archivo renombrado: {file_path.name} -> {new_name}")
+            
+            return {
+                "success": True,
+                "message": f"Renombrados {len(changes_made)} archivos de test",
+                "changes_made": changes_made
+            }
+            
+        except Exception as e:
+            logger.error(f"Error renombrando archivos de test: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "changes_made": changes_made
+            }
+    
+    def _execute_unify_test_functions(self, instruction: CursorInstruction) -> Dict[str, Any]:
+        """Unificar funciones de test duplicadas"""
+        changes_made = []
+        
+        try:
+            # Esta es una acción compleja que requiere análisis de código
+            # Por ahora, solo logueamos la instrucción
+            logger.info(f"Unificación de funciones de test solicitada para: {instruction.target}")
+            
+            return {
+                "success": True,
+                "message": "Unificación de funciones de test registrada (requiere intervención manual)",
+                "changes_made": changes_made
+            }
+            
+        except Exception as e:
+            logger.error(f"Error unificando funciones de test: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "changes_made": changes_made
+            }
+    
+    def _execute_add_test_imports(self, instruction: CursorInstruction) -> Dict[str, Any]:
+        """Agregar imports necesarios a archivos de test"""
+        changes_made = []
+        
+        try:
+            tests_dir = self.project_path / "tests"
+            if not tests_dir.exists():
+                return {
+                    "success": False,
+                    "error": "Directorio tests/ no existe",
+                    "changes_made": []
+                }
+            
+            test_files = list(tests_dir.glob("test_*.py")) + list(tests_dir.glob("*_test.py"))
+            
+            for test_file in test_files:
+                try:
+                    with open(test_file, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    
+                    # Verificar si necesita imports
+                    needs_unittest = 'import unittest' not in content and 'unittest.' in content
+                    needs_pytest = 'import pytest' not in content and 'pytest.' in content
+                    
+                    if needs_unittest or needs_pytest:
+                        # Agregar imports al inicio del archivo
+                        imports = []
+                        if needs_unittest:
+                            imports.append("import unittest")
+                        if needs_pytest:
+                            imports.append("import pytest")
+                        
+                        # Insertar imports después de docstring si existe
+                        lines = content.split('\n')
+                        insert_index = 0
+                        
+                        # Buscar docstring
+                        if lines and lines[0].strip().startswith('"""'):
+                            for i, line in enumerate(lines[1:], 1):
+                                if line.strip().endswith('"""'):
+                                    insert_index = i + 1
+                                    break
+                        
+                        # Insertar imports
+                        for import_line in imports:
+                            lines.insert(insert_index, import_line)
+                            insert_index += 1
+                        
+                        new_content = '\n'.join(lines)
+                        
+                        with open(test_file, 'w', encoding='utf-8') as f:
+                            f.write(new_content)
+                        
+                        changes_made.append(f"Agregados imports a {test_file.name}")
+                        logger.info(f"Imports agregados a {test_file.name}")
+                
+                except Exception as e:
+                    logger.warning(f"Error procesando {test_file.name}: {e}")
+                    continue
+            
+            return {
+                "success": True,
+                "message": f"Imports agregados a {len(changes_made)} archivos de test",
+                "changes_made": changes_made
+            }
+            
+        except Exception as e:
+            logger.error(f"Error agregando imports de test: {e}")
             return {
                 "success": False,
                 "error": str(e),

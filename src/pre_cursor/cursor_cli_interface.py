@@ -150,18 +150,22 @@ class CursorCLIInterface:
                 logger.info("Cursor Agent no disponible, usando AutoExecutor")
                 auto_result = self.auto_executor.execute_instruction(instruction)
                 
-                if auto_result["success"]:
-                    result = type('Result', (), {
-                        'success': True,
-                        'output': auto_result.get("message", "Cambios aplicados automáticamente"),
-                        'changes_made': auto_result.get("changes_made", []),
-                        'error': None
-                    })()
-                else:
-                    # Si falla AutoExecutor, usar método original
-                    prompt = self._generate_cursor_prompt(instruction)
-                    result = self._run_cursor_command(prompt, instruction)
-                    result.error = f"AutoExecutor failed: {auto_result.get('error', 'Unknown error')}. {getattr(result, 'error', '') or ''}"
+            if auto_result["success"]:
+                # En modo daemon, solo guardar prompt sin abrir IDE
+                prompt = self._generate_cursor_prompt(instruction)
+                self._save_prompt_for_reference(prompt, instruction)
+                
+                result = type('Result', (), {
+                    'success': True,
+                    'output': auto_result.get("message", "Cambios aplicados automáticamente"),
+                    'changes_made': auto_result.get("changes_made", []),
+                    'error': None
+                })()
+            else:
+                # Si falla AutoExecutor, usar método original
+                prompt = self._generate_cursor_prompt(instruction)
+                result = self._run_cursor_command(prompt, instruction)
+                result.error = f"AutoExecutor failed: {auto_result.get('error', 'Unknown error')}. {getattr(result, 'error', '') or ''}"
             
             execution_time = time.time() - start_time
             

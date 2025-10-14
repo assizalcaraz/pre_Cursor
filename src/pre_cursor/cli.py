@@ -12,6 +12,7 @@ import json
 import yaml
 import os
 import sys
+import time
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
@@ -783,6 +784,202 @@ def trigger_status(project_path, path):
         trigger_text = 'Sí' if status['trigger_active'] else 'No'
         console.print(f"🔧 Trigger activo: [bold {trigger_color}]{trigger_text}[/bold {trigger_color}]")
         console.print(f"═══════════════════════════════════════════════════════════")
+        
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--interval', '-i', type=int, default=300, help='Intervalo de supervisión en segundos')
+@click.option('--daemon', '-d', is_flag=True, help='Ejecutar como daemon en background')
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def test_supervisor(project_path, interval, daemon, path):
+    """
+    🧪 Supervisor especializado para tests
+    
+    Supervisa específicamente la carpeta de tests, unificando nombres,
+    funciones y sincronizando con documentación.
+    
+    Ejemplos:
+    pre-cursor supervisor test-supervisor -p
+    pre-cursor supervisor test-supervisor -p --daemon --interval 180
+    """
+    try:
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
+        
+        from .test_supervisor import TestSupervisor
+        
+        console.print(f"\n🧪 Iniciando supervisión especializada de tests en: [bold blue]{project_path}[/bold blue]")
+        console.print(f"⏱️ Intervalo: [bold green]{interval}[/bold green] segundos")
+        
+        test_supervisor = TestSupervisor(project_path)
+        
+        if daemon:
+            console.print("🔄 Ejecutando como daemon en segundo plano...", style="yellow")
+            console.print("💡 El proceso continuará ejecutándose en background", style="blue")
+            console.print("🛑 Para detener: pkill -f 'pre-cursor supervisor test-supervisor'", style="yellow")
+            
+            # Ejecutar en segundo plano real
+            import subprocess
+            import sys
+            
+            # Crear comando para ejecutar en background
+            cmd = [
+                sys.executable, '-m', 'pre_cursor.cli', 
+                'supervisor', 'test-supervisor', 
+                project_path, '--interval', str(interval)
+            ]
+            
+            # Ejecutar en background con detach
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+                start_new_session=True,
+                cwd=project_path
+            )
+            
+            console.print(f"✅ Daemon de tests iniciado con PID: [bold green]{process.pid}[/bold green]")
+            console.print(f"📁 Directorio: [bold blue]{project_path}[/bold blue]")
+            console.print(f"⏱️ Intervalo: [bold green]{interval}[/bold green] segundos")
+            console.print("📝 Logs disponibles en: .cursor/logs/test_supervisor.json")
+            
+        else:
+            console.print("🔄 Ejecutando supervisión de tests...", style="yellow")
+            console.print("💡 Presiona Ctrl+C para detener", style="blue")
+            
+            # Ejecutar supervisión continua
+            try:
+                while True:
+                    result = test_supervisor.run_test_supervision()
+                    
+                    if result["total_issues"] > 0:
+                        console.print(f"\n🧪 Test Supervisor - {result['total_issues']} problemas encontrados")
+                        for issue in result["issues"]:
+                            severity_color = "red" if issue.severity == "high" else "yellow" if issue.severity == "medium" else "blue"
+                            console.print(f"  • [{severity_color}]{issue.severity.upper()}[/{severity_color}]: {issue.description}")
+                            console.print(f"    💡 {issue.suggestion}")
+                        
+                        # Mostrar correcciones aplicadas
+                        if "corrections_applied" in result and result["corrections_applied"]["total_corrections"] > 0:
+                            corrections = result["corrections_applied"]
+                            console.print(f"\n🔧 Correcciones aplicadas: {corrections['successful']}/{corrections['total_corrections']}")
+                            for change in corrections.get("changes_made", []):
+                                console.print(f"  ✅ {change}")
+                        
+                        # Mostrar resultados de validación con LLM
+                        if "validation_results" in result:
+                            validation = result["validation_results"]
+                            console.print(f"\n🤖 Validación con LLM:")
+                            console.print(f"  📊 Tests analizados: {validation.get('total_analyzed', 0)}")
+                            console.print(f"  ✅ Tests válidos: {len(validation.get('valid_tests', []))}")
+                            console.print(f"  ❌ Tests inválidos: {len(validation.get('invalid_tests', []))}")
+                            console.print(f"  🗑️ Tests vacíos: {len(validation.get('empty_tests', []))}")
+                            
+                            if validation.get("cleanup_results"):
+                                cleanup = validation["cleanup_results"]
+                                console.print(f"  🧹 Archivos eliminados: {len(cleanup.get('files_removed', []))}")
+                                console.print(f"  📁 Archivo unificado creado: {'Sí' if cleanup.get('unified_file_created') else 'No'}")
+                    else:
+                        console.print("✅ Tests en buen estado - no se encontraron problemas")
+                    
+                    time.sleep(interval)
+                    
+            except KeyboardInterrupt:
+                console.print("\n🛑 Supervisión de tests detenida por el usuario")
+            
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+@click.option('--cleanup', '-c', is_flag=True, help='Limpiar tests inválidos y crear archivo unificado')
+def validate_tests(project_path, path, cleanup):
+    """
+    🤖 Validar tests usando LLM (Cursor Agent CLI)
+    
+    Analiza el contenido real de los tests para detectar tests falsos,
+    vacíos o inválidos, y opcionalmente los limpia y unifica.
+    
+    Ejemplos:
+    pre-cursor supervisor validate-tests -p
+    pre-cursor supervisor validate-tests -p --cleanup
+    """
+    try:
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
+        
+        from .test_validator import TestValidator
+        
+        console.print(f"\n🤖 Validando tests con LLM en: [bold blue]{project_path}[/bold blue]")
+        
+        validator = TestValidator(project_path)
+        results = validator.validate_tests_with_llm()
+        
+        # Mostrar resultados
+        console.print(f"\n📊 Resultados de validación:")
+        console.print(f"  📁 Tests analizados: [bold green]{results['total_analyzed']}[/bold green]")
+        console.print(f"  ✅ Tests válidos: [bold green]{len(results['valid_tests'])}[/bold green]")
+        console.print(f"  ❌ Tests inválidos: [bold red]{len(results['invalid_tests'])}[/bold red]")
+        console.print(f"  🗑️ Tests vacíos: [bold yellow]{len(results['empty_tests'])}[/bold yellow]")
+        
+        # Mostrar detalles de tests inválidos
+        if results['invalid_tests']:
+            console.print(f"\n❌ Tests inválidos encontrados:")
+            for test in results['invalid_tests']:
+                console.print(f"  • [red]{Path(test['file']).name}[/red]: {test['reason']}")
+                if test.get('suggestions'):
+                    for suggestion in test['suggestions']:
+                        console.print(f"    💡 {suggestion}")
+        
+        # Mostrar detalles de tests vacíos
+        if results['empty_tests']:
+            console.print(f"\n🗑️ Tests vacíos encontrados:")
+            for test in results['empty_tests']:
+                console.print(f"  • [yellow]{Path(test['file']).name}[/yellow]: {test['reason']}")
+        
+        # Mostrar tests válidos
+        if results['valid_tests']:
+            console.print(f"\n✅ Tests válidos encontrados:")
+            for test in results['valid_tests']:
+                console.print(f"  • [green]{Path(test['file']).name}[/green] (Calidad: {test['quality_score']}/10)")
+                console.print(f"    Funciones: {', '.join(test['functions'])}")
+        
+        # Limpiar si se solicita
+        if cleanup:
+            console.print(f"\n🧹 Limpiando tests inválidos y vacíos...")
+            cleanup_results = validator.cleanup_invalid_tests(results)
+            
+            console.print(f"  🗑️ Archivos eliminados: [bold red]{len(cleanup_results['files_removed'])}[/bold red]")
+            for file_path in cleanup_results['files_removed']:
+                console.print(f"    • {Path(file_path).name}")
+            
+            console.print(f"  📁 Archivos mantenidos: [bold green]{len(cleanup_results['files_kept'])}[/bold green]")
+            for file_path in cleanup_results['files_kept']:
+                console.print(f"    • {Path(file_path).name}")
+            
+            if cleanup_results.get('unified_file_created'):
+                console.print(f"  ✅ Archivo unificado creado: [bold green]test_unified.py[/bold green]")
+            
+            if cleanup_results.get('errors'):
+                console.print(f"  ❌ Errores durante la limpieza:")
+                for error in cleanup_results['errors']:
+                    console.print(f"    • {error}")
+        
+        console.print(f"\n📝 Logs guardados en: .cursor/logs/test_validator.json")
         
     except Exception as e:
         console.print(f"❌ Error: {e}", style="red")

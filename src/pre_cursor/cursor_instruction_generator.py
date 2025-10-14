@@ -43,7 +43,12 @@ class CursorInstructionGenerator:
             "structure_issue": self._create_structure_issue_instruction,
             "missing_documentation": self._create_missing_documentation_instruction,
             "code_quality": self._create_code_quality_instruction,
-            "configuration_issue": self._create_configuration_issue_instruction
+            "configuration_issue": self._create_configuration_issue_instruction,
+            # Instrucciones específicas para tests
+            "create_tests_dir": self._create_tests_dir_instruction,
+            "rename_test_files": self._create_rename_test_files_instruction,
+            "unify_test_functions": self._create_unify_test_functions_instruction,
+            "add_test_imports": self._create_add_test_imports_instruction
         }
     
     def _load_methodology(self) -> Dict[str, Any]:
@@ -138,7 +143,26 @@ class CursorInstructionGenerator:
         description = issue.description.lower()
         file_path = str(issue.file_path).lower()
         
-        if "fuera de lugar" in description or "misplaced" in description or "en raíz" in description:
+        # Clasificación específica para tests
+        if issue.type == "missing_tests_dir":
+            return "create_tests_dir"
+        elif issue.type == "missing_init":
+            return "create_tests_dir"
+        elif issue.type == "no_test_files":
+            return "create_tests_dir"
+        elif issue.type == "inconsistent_naming":
+            return "rename_test_files"
+        elif issue.type == "duplicate_test_function":
+            return "unify_test_functions"
+        elif issue.type == "missing_test_imports":
+            return "add_test_imports"
+        elif issue.type == "empty_test_function":
+            return "unify_test_functions"
+        elif issue.type == "no_test_coverage":
+            return "create_tests_dir"
+        
+        # Clasificación general
+        elif "fuera de lugar" in description or "misplaced" in description or "en raíz" in description:
             return "misplaced_file"
         elif "duplicado" in description or "duplicate" in description:
             return "duplicate_function"
@@ -370,3 +394,43 @@ Metodología: Mantener archivos de configuración en ubicaciones apropiadas.
         
         logger.info(f"Instrucciones guardadas en: {output_path}")
         return str(output_path)
+    
+    def _create_tests_dir_instruction(self, issue: ProjectIssue) -> CursorInstruction:
+        """Crear instrucción para crear directorio de tests"""
+        return CursorInstruction(
+            action="create_tests_dir",
+            target="tests/",
+            context=f"Crear directorio tests/ con archivo __init__.py\n\nProblema: {issue.description}\nSugerencia: {issue.suggestion}",
+            methodology_reference="test_organization",
+            priority=issue.severity
+        )
+    
+    def _create_rename_test_files_instruction(self, issue: ProjectIssue) -> CursorInstruction:
+        """Crear instrucción para renombrar archivos de test"""
+        return CursorInstruction(
+            action="rename_test_files",
+            target="tests/",
+            context=f"Renombrar archivos de test para usar nomenclatura consistente\n\nProblema: {issue.description}\nSugerencia: {issue.suggestion}",
+            methodology_reference="test_naming",
+            priority=issue.severity
+        )
+    
+    def _create_unify_test_functions_instruction(self, issue: ProjectIssue) -> CursorInstruction:
+        """Crear instrucción para unificar funciones de test duplicadas"""
+        return CursorInstruction(
+            action="unify_test_functions",
+            target="tests/",
+            context=f"Unificar funciones de test duplicadas o vacías\n\nProblema: {issue.description}\nSugerencia: {issue.suggestion}",
+            methodology_reference="test_optimization",
+            priority=issue.severity
+        )
+    
+    def _create_add_test_imports_instruction(self, issue: ProjectIssue) -> CursorInstruction:
+        """Crear instrucción para agregar imports necesarios a tests"""
+        return CursorInstruction(
+            action="add_test_imports",
+            target=str(issue.file_path) if issue.file_path else "tests/",
+            context=f"Agregar imports necesarios (unittest/pytest)\n\nProblema: {issue.description}\nSugerencia: {issue.suggestion}",
+            methodology_reference="test_imports",
+            priority=issue.severity
+        )

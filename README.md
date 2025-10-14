@@ -69,6 +69,24 @@ python3 init_project.py --config mi_config.json
 - **Integración con Cursor IDE** para supervisión continua
 - **Gestión CLI completa** con comandos dedicados
 - **Configuración por proyecto** flexible y personalizable
+
+### 🧪 Test Supervisor Especializado (NUEVO)
+- **Validación con LLM** usando Cursor Agent CLI
+- **Detección de tests falsos/vacíos** automáticamente
+- **Análisis de calidad** con puntuación numérica (1-10)
+- **Limpieza automática** de tests inválidos
+- **Unificación inteligente** de tests válidos en un solo archivo
+- **Sincronización con documentación** (README, BITACORA, etc.)
+- **Monitoreo continuo** en modo daemon
+- **Correcciones automáticas** sin intervención del usuario
+
+### 🔄 Integración Bidireccional (NUEVO)
+- **Sistema de triggers** para activación externa
+- **Daemon en segundo plano** sin abrir IDE constantemente
+- **AutoExecutor** para correcciones directas del sistema de archivos
+- **Cursor Agent CLI** para ejecución de prompts inteligentes
+- **Feedback loop** completo entre detección y corrección
+- **Logs centralizados** en `.cursor/logs/`
 ```
 
 ### Uso Básico
@@ -122,6 +140,19 @@ pre-cursor supervisor logs -p
 
 # Detener supervisión
 pre-cursor supervisor stop -p
+
+# Test Supervisor especializado
+pre-cursor supervisor test-supervisor -p
+pre-cursor supervisor test-supervisor -p --daemon --interval 180
+
+# Validar tests con LLM
+pre-cursor supervisor validate-tests -p
+pre-cursor supervisor validate-tests -p --cleanup
+
+# Sistema de triggers
+pre-cursor supervisor trigger-monitor -p --daemon --interval 300
+pre-cursor supervisor create-trigger -p
+pre-cursor supervisor trigger-status -p
 ```
 
 #### Crear Proyectos
@@ -235,6 +266,11 @@ pre_cursor/
 - **Validación**: Validación robusta de parámetros de entrada
 - **Configuración**: Soporte para archivos de configuración JSON/YAML
 - **TD_MCP Integration**: Soporte específico para proyectos TD_MCP
+- **Supervisor Automático**: Detección y corrección automática de problemas
+- **Test Supervisor**: Validación y limpieza de tests con LLM
+- **Integración Bidireccional**: Sistema completo de supervisión continua
+- **Daemon en Background**: Ejecución continua sin intervención del usuario
+- **Sistema de Triggers**: Activación externa y monitoreo automático
 
 ### 🔄 En Desarrollo
 - **Tests Automáticos**: Suite de tests para el generador
@@ -358,4 +394,4 @@ Para preguntas o sugerencias, crear un issue en el repositorio.
 
 **Fecha de Creación**: 2024-12-19  
 **Última Actualización**: 2024-12-19  
-**Estado**: Fase 2 Completada - Integración TD_MCP Implementada
+**Estado**: Fase 3 Completada - Test Supervisor e Integración Bidireccional Implementada
