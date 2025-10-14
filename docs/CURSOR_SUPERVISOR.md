@@ -125,17 +125,23 @@ Inicia supervisión del proyecto.
 # Verificación única
 pre-cursor supervisor start /path/to/project
 
+# Usar directorio actual (recomendado)
+pre-cursor supervisor start -p
+
 # Supervisión continua (daemon)
 pre-cursor supervisor start /path/to/project --daemon
 
-# Con intervalo personalizado
-pre-cursor supervisor start /path/to/project --interval 600 --daemon
+# Con intervalo personalizado usando directorio actual
+pre-cursor supervisor start -p --interval 600 --daemon
 ```
 
 #### **`pre-cursor supervisor status`**
 Verifica el estado actual del supervisor.
 ```bash
 pre-cursor supervisor status /path/to/project
+
+# Usar directorio actual (recomendado)
+pre-cursor supervisor status -p
 ```
 **Muestra:**
 - Estado de supervisión activa
@@ -149,14 +155,17 @@ Configura parámetros del supervisor.
 # Configurar intervalo
 pre-cursor supervisor config /path/to/project --interval 300
 
+# Usar directorio actual (recomendado)
+pre-cursor supervisor config -p --interval 300
+
 # Habilitar corrección automática
-pre-cursor supervisor config /path/to/project --auto-fix true
+pre-cursor supervisor config -p --auto-fix true
 
 # Cambiar nivel de logging
-pre-cursor supervisor config /path/to/project --log-level DEBUG
+pre-cursor supervisor config -p --log-level DEBUG
 
 # Configuración completa
-pre-cursor supervisor config /path/to/project --interval 600 --auto-fix true --log-level INFO
+pre-cursor supervisor config -p --interval 600 --auto-fix true --log-level INFO
 ```
 
 #### **`pre-cursor supervisor fix`**
@@ -165,20 +174,29 @@ Corrige problemas detectados en el proyecto.
 # Solo mostrar problemas
 pre-cursor supervisor fix /path/to/project
 
+# Usar directorio actual (recomendado)
+pre-cursor supervisor fix -p
+
 # Aplicar correcciones automáticas
-pre-cursor supervisor fix /path/to/project --fix
+pre-cursor supervisor fix -p --fix
 ```
 
 #### **`pre-cursor supervisor logs`**
 Muestra logs del supervisor.
 ```bash
 pre-cursor supervisor logs /path/to/project
+
+# Usar directorio actual (recomendado)
+pre-cursor supervisor logs -p
 ```
 
 #### **`pre-cursor supervisor stop`**
 Detiene la supervisión activa.
 ```bash
 pre-cursor supervisor stop /path/to/project
+
+# Usar directorio actual (recomendado)
+pre-cursor supervisor stop -p
 ```
 
 ### **Configuración por Proyecto:**

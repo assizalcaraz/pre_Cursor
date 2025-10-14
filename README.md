@@ -102,24 +102,26 @@ Pre-Cursor incluye una interfaz de línea de comandos moderna y profesional con 
 ```bash
 # Verificar estado del supervisor
 pre-cursor supervisor status /path/to/project
+pre-cursor supervisor status -p  # Usar directorio actual
 
 # Iniciar supervisión (verificación única)
 pre-cursor supervisor start /path/to/project
+pre-cursor supervisor start -p  # Usar directorio actual
 
 # Iniciar supervisión continua (daemon)
-pre-cursor supervisor start /path/to/project --daemon --interval 600
+pre-cursor supervisor start -p --daemon --interval 600
 
 # Configurar supervisor
-pre-cursor supervisor config /path/to/project --interval 300 --auto-fix true
+pre-cursor supervisor config -p --interval 300 --auto-fix true
 
 # Corregir problemas detectados
-pre-cursor supervisor fix /path/to/project --fix
+pre-cursor supervisor fix -p --fix
 
 # Ver logs del supervisor
-pre-cursor supervisor logs /path/to/project
+pre-cursor supervisor logs -p
 
 # Detener supervisión
-pre-cursor supervisor stop /path/to/project
+pre-cursor supervisor stop -p
 ```
 
 #### Crear Proyectos
