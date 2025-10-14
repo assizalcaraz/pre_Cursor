@@ -381,3 +381,5 @@ logs/
 # Test projects (generated during development)
 test_*/
 *_test_project/
+test_cursor_guide*/
+PROYECTOS_GENERADOS/
