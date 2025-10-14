@@ -222,10 +222,11 @@ def supervisor():
     pass
 
 @supervisor.command()
-@click.argument('project_path', type=click.Path(exists=True))
+@click.argument('project_path', type=click.Path(exists=True), required=False)
 @click.option('--interval', '-i', type=int, default=300, help='Intervalo de supervisión en segundos')
 @click.option('--daemon', '-d', is_flag=True, help='Ejecutar como daemon en background')
-def start(project_path, interval, daemon):
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def start(project_path, interval, daemon, path):
     """
     🚀 Iniciar supervisión del proyecto
     
@@ -233,9 +234,19 @@ def start(project_path, interval, daemon):
     pre-cursor supervisor start /path/to/project
     pre-cursor supervisor start /path/to/project --interval 600
     pre-cursor supervisor start /path/to/project --daemon
+    pre-cursor supervisor start -p  # Usar directorio actual
+    pre-cursor supervisor start -p --daemon --interval 600
     """
     try:
         from pre_cursor.cursor_supervisor import CursorSupervisor
+        
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
         
         console.print(f"\n🤖 Iniciando supervisión de: [bold blue]{project_path}[/bold blue]")
         console.print(f"⏱️ Intervalo: [bold green]{interval}[/bold green] segundos")
@@ -257,16 +268,26 @@ def start(project_path, interval, daemon):
         console.print(f"❌ Error: {e}", style="red")
 
 @supervisor.command()
-@click.argument('project_path', type=click.Path(exists=True))
-def status(project_path):
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def status(project_path, path):
     """
     📊 Verificar estado del supervisor
     
     Ejemplos:
     pre-cursor supervisor status /path/to/project
+    pre-cursor supervisor status -p  # Usar directorio actual
     """
     try:
         from pre_cursor.cursor_supervisor import CursorSupervisor
+        
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
         
         console.print(f"\n📊 Estado del supervisor para: [bold blue]{project_path}[/bold blue]")
         
@@ -284,11 +305,12 @@ def status(project_path):
         console.print(f"❌ Error: {e}", style="red")
 
 @supervisor.command()
-@click.argument('project_path', type=click.Path(exists=True))
+@click.argument('project_path', type=click.Path(exists=True), required=False)
 @click.option('--interval', '-i', type=int, help='Nuevo intervalo en segundos')
 @click.option('--auto-fix', type=click.Choice(['true', 'false']), help='Habilitar/deshabilitar corrección automática')
 @click.option('--log-level', type=click.Choice(['DEBUG', 'INFO', 'WARNING', 'ERROR']), help='Nivel de logging')
-def config(project_path, interval, auto_fix, log_level):
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def config(project_path, interval, auto_fix, log_level, path):
     """
     ⚙️ Configurar supervisor del proyecto
     
@@ -296,10 +318,19 @@ def config(project_path, interval, auto_fix, log_level):
     pre-cursor supervisor config /path/to/project --interval 600
     pre-cursor supervisor config /path/to/project --auto-fix true
     pre-cursor supervisor config /path/to/project --log-level DEBUG
+    pre-cursor supervisor config -p --interval 600  # Usar directorio actual
     """
     try:
         import yaml
         from pathlib import Path
+        
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
         
         config_path = Path(project_path) / 'config' / 'cursor_supervisor.yaml'
         
@@ -339,17 +370,27 @@ def config(project_path, interval, auto_fix, log_level):
         console.print(f"❌ Error: {e}", style="red")
 
 @supervisor.command()
-@click.argument('project_path', type=click.Path(exists=True))
-def stop(project_path):
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def stop(project_path, path):
     """
     🛑 Detener supervisión del proyecto
     
     Ejemplos:
     pre-cursor supervisor stop /path/to/project
+    pre-cursor supervisor stop -p  # Usar directorio actual
     """
     try:
         import psutil
         import os
+        
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
         
         console.print(f"\n🛑 Deteniendo supervisión de: [bold blue]{project_path}[/bold blue]")
         
@@ -387,18 +428,28 @@ def stop(project_path):
         console.print(f"❌ Error: {e}", style="red")
 
 @supervisor.command()
-@click.argument('project_path', type=click.Path(exists=True))
+@click.argument('project_path', type=click.Path(exists=True), required=False)
 @click.option('--fix', '-f', is_flag=True, help='Aplicar correcciones automáticas')
-def fix(project_path, fix):
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def fix(project_path, fix, path):
     """
     🔧 Corregir problemas detectados en el proyecto
     
     Ejemplos:
     pre-cursor supervisor fix /path/to/project
     pre-cursor supervisor fix /path/to/project --fix
+    pre-cursor supervisor fix -p --fix  # Usar directorio actual
     """
     try:
         from pre_cursor.cursor_supervisor import CursorSupervisor
+        
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
         
         console.print(f"\n🔧 Corrigiendo problemas en: [bold blue]{project_path}[/bold blue]")
         
@@ -435,16 +486,26 @@ def fix(project_path, fix):
         console.print(f"❌ Error: {e}", style="red")
 
 @supervisor.command()
-@click.argument('project_path', type=click.Path(exists=True))
-def logs(project_path):
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def logs(project_path, path):
     """
     📋 Mostrar logs del supervisor
     
     Ejemplos:
     pre-cursor supervisor logs /path/to/project
+    pre-cursor supervisor logs -p  # Usar directorio actual
     """
     try:
         from pathlib import Path
+        
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
         
         log_files = [
             Path(project_path) / 'logs' / 'supervisor.log',
@@ -504,7 +565,9 @@ def info(examples):
         console.print("• pre-cursor template --type 'Python Library'")
         console.print("• pre-cursor generate mi_config.json")
         console.print("• pre-cursor supervisor start /path/to/project")
+        console.print("• pre-cursor supervisor start -p  # Usar directorio actual")
         console.print("• pre-cursor supervisor status /path/to/project")
+        console.print("• pre-cursor supervisor config -p --interval 600")
 
 def _validate_project_name(name):
     """Validar nombre del proyecto."""
