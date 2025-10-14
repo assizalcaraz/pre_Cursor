@@ -735,8 +735,8 @@ def metrics(project_path, path):
         # Crear feedback processor
         feedback_processor = FeedbackProcessor(project_path)
         
-        # Cargar métricas
-        metrics_path = Path(project_path) / "CURSOR_METRICS.json"
+        # Cargar métricas desde nueva estructura
+        metrics_path = Path(project_path) / ".cursor" / "logs" / "metrics.json"
         if metrics_path.exists():
             with open(metrics_path, 'r', encoding='utf-8') as f:
                 metrics = json.load(f)

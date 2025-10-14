@@ -343,7 +343,7 @@ Mantén la funcionalidad existente y asegúrate de que los cambios sean consiste
     def save_execution_log(self, output_path: str = None) -> str:
         """Guardar log de ejecuciones"""
         if not output_path:
-            output_path = self.project_path / "CURSOR_EXECUTION_LOG.json"
+            output_path = self.execution_log_path
         
         log_data = {
             "project_path": str(self.project_path),

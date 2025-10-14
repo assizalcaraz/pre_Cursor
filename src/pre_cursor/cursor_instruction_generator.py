@@ -356,7 +356,7 @@ Metodología: Mantener archivos de configuración en ubicaciones apropiadas.
                          output_path: str = None) -> str:
         """Guardar instrucciones en archivo JSON"""
         if not output_path:
-            output_path = self.project_path / "CURSOR_INSTRUCTIONS.json"
+            output_path = self.instructions_log_path
         
         instructions_data = {
             "project_path": str(self.project_path),

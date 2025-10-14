@@ -34,6 +34,7 @@ class FeedbackProcessor:
         self.logs_dir.mkdir(parents=True, exist_ok=True)
         
         self.metrics_path = self.logs_dir / "metrics.json"
+        self.feedback_log_path = self.logs_dir / "feedback.json"
         self.feedback_log = []
         
         # Crear archivos si no existen
@@ -309,7 +310,7 @@ class FeedbackProcessor:
     def save_feedback_log(self, output_path: str = None) -> str:
         """Guardar log de feedback"""
         if not output_path:
-            output_path = self.project_path / "CURSOR_FEEDBACK_LOG.json"
+            output_path = self.feedback_log_path
         
         log_data = {
             "project_path": str(self.project_path),
