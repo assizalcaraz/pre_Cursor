@@ -73,7 +73,7 @@ class ProjectStructureMonitor:
         issues = []
         
         # Archivos de test en raíz
-        test_files = list(self.project_path.glob('*_test.py'))
+        test_files = list(self.project_path.glob('*_test.py')) + list(self.project_path.glob('test*.py'))
         if test_files:
             issues.append(ProjectIssue(
                 type='misplaced_files',
