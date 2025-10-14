@@ -131,7 +131,7 @@ class CursorInstructionGenerator:
         description = issue.description.lower()
         file_path = str(issue.file_path).lower()
         
-        if "fuera de lugar" in description or "misplaced" in description:
+        if "fuera de lugar" in description or "misplaced" in description or "en raíz" in description:
             return "misplaced_file"
         elif "duplicado" in description or "duplicate" in description:
             return "duplicate_function"
@@ -148,6 +148,10 @@ class CursorInstructionGenerator:
     
     def _create_misplaced_file_instruction(self, issue: ProjectIssue) -> CursorInstruction:
         """Crear instrucción para archivo fuera de lugar"""
+        # Caso especial: archivos de test en la raíz (file_path es None)
+        if issue.file_path is None and "en raíz" in issue.description.lower():
+            return self._create_test_files_in_root_instruction(issue)
+        
         file_path = Path(issue.file_path)
         correct_location = self._get_correct_location(file_path)
         
@@ -163,6 +167,37 @@ Metodología: {self.methodology.get('file_organization', {})}
         return CursorInstruction(
             action="move_file",
             target=str(file_path),
+            context=context,
+            methodology_reference="file_organization",
+            priority="high"
+        )
+    
+    def _create_test_files_in_root_instruction(self, issue: ProjectIssue) -> CursorInstruction:
+        """Crear instrucción específica para archivos de test en la raíz"""
+        # Extraer nombres de archivos de la descripción
+        import re
+        files_match = re.search(r"\[(.*?)\]", issue.description)
+        files = files_match.group(1).replace("'", "").split(", ") if files_match else ["archivos de test"]
+        
+        context = f"""
+Archivos de test detectados en la raíz del proyecto: {', '.join(files)}
+
+Ubicación actual: Raíz del proyecto
+Ubicación correcta: tests/
+
+Acción requerida: Mover todos los archivos de test al directorio tests/ según metodología establecida.
+Metodología: {self.methodology.get('file_organization', {})}
+
+Instrucciones específicas:
+1. Crear directorio tests/ si no existe
+2. Mover archivos de test desde la raíz al directorio tests/
+3. Verificar que no se rompa funcionalidad existente
+4. Actualizar imports si es necesario
+"""
+        
+        return CursorInstruction(
+            action="move_test_files",
+            target="proyecto",
             context=context,
             methodology_reference="file_organization",
             priority="high"
