@@ -21,6 +21,7 @@ from datetime import datetime
 import logging
 
 from .models import CursorInstruction, ExecutionResult
+from .auto_executor import AutoExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,9 @@ class CursorCLIInterface:
         self.cursor_path = cursor_path or self._find_cursor_executable()
         self.cursor_available = self._check_cursor_availability()
         self.execution_log = []
+        
+        # Inicializar AutoExecutor para ejecución real de cambios
+        self.auto_executor = AutoExecutor(project_path)
         
         # Estructura organizada para archivos de Cursor
         self.cursor_dir = self.project_path / ".cursor"
@@ -109,11 +113,29 @@ class CursorCLIInterface:
             return self._simulate_execution(instruction)
         
         try:
-            # Generar prompt para Cursor
-            prompt = self._generate_cursor_prompt(instruction)
+            # Usar AutoExecutor para ejecución real de cambios
+            auto_result = self.auto_executor.execute_instruction(instruction)
             
-            # Ejecutar en Cursor CLI
-            result = self._run_cursor_command(prompt, instruction)
+            if auto_result["success"]:
+                # Generar prompt para referencia (opcional)
+                prompt = self._generate_cursor_prompt(instruction)
+                self._save_prompt_for_reference(prompt, instruction)
+                
+                # Crear resultado exitoso
+                result = type('Result', (), {
+                    'success': True,
+                    'output': auto_result.get("message", "Cambios aplicados automáticamente"),
+                    'changes_made': auto_result.get("changes_made", []),
+                    'error': None
+                })()
+            else:
+                # Si falla la ejecución automática, usar método original como fallback
+                prompt = self._generate_cursor_prompt(instruction)
+                result = self._run_cursor_command(prompt, instruction)
+                
+                # Agregar información del error
+                if not result.success:
+                    result.error = f"AutoExecutor failed: {auto_result.get('error', 'Unknown error')}. {getattr(result, 'error', '') or ''}"
             
             execution_time = time.time() - start_time
             
@@ -264,6 +286,35 @@ Mantén la funcionalidad existente y asegúrate de que los cambios sean consiste
                 success=False,
                 error=f"Error abriendo Cursor IDE: {e}"
             )
+    
+    def _save_prompt_for_reference(self, prompt: str, instruction: CursorInstruction):
+        """Guardar prompt para referencia (sin abrir Cursor IDE)"""
+        try:
+            # Crear directorio por fecha para organizar prompts
+            date_dir = self.prompts_dir / instruction.timestamp.strftime('%Y-%m-%d')
+            date_dir.mkdir(exist_ok=True)
+            
+            # Crear archivo de prompt organizado
+            prompt_filename = f"{instruction.action}_{instruction.timestamp.strftime('%H%M%S')}.md"
+            prompt_file = date_dir / prompt_filename
+            
+            with open(prompt_file, 'w', encoding='utf-8') as f:
+                f.write(prompt)
+            
+            # Crear enlace simbólico al último prompt
+            latest_link = self.prompts_dir / "latest.md"
+            try:
+                if latest_link.exists() or latest_link.is_symlink():
+                    latest_link.unlink()
+                latest_link.symlink_to(prompt_file.relative_to(self.prompts_dir))
+                logger.debug(f"Enlace simbólico creado: {latest_link} -> {prompt_file}")
+            except Exception as e:
+                logger.warning(f"No se pudo crear enlace simbólico: {e}")
+            
+            logger.info(f"Prompt guardado para referencia: {prompt_file}")
+            
+        except Exception as e:
+            logger.error(f"Error guardando prompt para referencia: {e}")
     
     def _display_instruction_to_user(self, instruction: CursorInstruction, prompt_file: Path):
         """Mostrar instrucciones al usuario en la terminal"""
