@@ -10,6 +10,21 @@
 - Python 3.8+
 - Git
 
+### Estructura del Proyecto
+```
+pre-cursor/
+├── README.md              # Documentación principal
+├── init_project.py        # Generador principal
+├── src/pre_cursor/        # Código fuente
+├── templates/             # Plantillas de proyecto
+├── docs/                  # Documentación técnica
+├── docs/guides/           # Guías de usuario
+├── config/                # Archivos de configuración
+├── scripts/               # Scripts de desarrollo
+├── tests/                 # Pruebas unitarias
+└── examples/              # Ejemplos y demos
+```
+
 ### Instalación y Uso
 ```bash
 # Clonar el repositorio
@@ -44,6 +59,14 @@ python3 init_project.py --config mi_config.json
 - Sistema de detección y reemplazo mejorado
 - Logging detallado del procesamiento
 - Optimización de espacio en disco (~3GB liberados)
+
+### 🤖 Supervisor Automático de Cursor
+- **Detección automática** de archivos fuera de lugar
+- **Identificación de duplicados** (archivos y funciones)
+- **Verificación de estructura** del proyecto
+- **Actualización automática** de bitácora
+- **Corrección automática** de problemas simples
+- **Integración con Cursor IDE** para supervisión continua
 ```
 
 ### Uso Básico
@@ -250,6 +273,28 @@ visualización de datos'."
 - **Consistencia Garantizada**: Cada proyecto sigue la metodología al 100%
 - **Contexto Automático**: Archivo CONTEXTO.md generado automáticamente
 - **Soporte TD_MCP**: Generación específica para proyectos TouchDesigner MCP
+
+---
+
+## 📚 Documentación
+
+### Estructura de Documentación
+- **`docs/`** - Documentación técnica del proyecto
+- **`docs/guides/`** - Guías de usuario paso a paso
+- **`docs/CURSOR_SUPERVISOR.md`** - Guía completa del supervisor automático
+- **`docs/INVESTIGACION_CURSOR_CLI.md`** - Investigación y desarrollo
+- **`docs/METODOLOGIA_DESARROLLO.md`** - Metodología establecida
+
+### Guías Disponibles
+- **`QUICKSTART.md`** - Inicio rápido
+- **`GUIA_PASO_A_PASO.md`** - Guía detallada
+- **`GUIA_SUPER_SIMPLE.md`** - Para principiantes
+- **`README_PRINCIPIANTES.md`** - Introducción básica
+
+### Archivos de Configuración
+- **`config/`** - Archivos de configuración del proyecto
+- **`examples/`** - Ejemplos de uso y configuración
+- **`scripts/`** - Scripts de instalación y desarrollo
 
 ---
 
