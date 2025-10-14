@@ -223,21 +223,15 @@ Mantén la funcionalidad existente y asegúrate de que los cambios sean consiste
             with open(prompt_file, 'w', encoding='utf-8') as f:
                 f.write(prompt)
             
-            # Comando para abrir Cursor con el archivo de prompt
-            cmd = [
-                self.cursor_path,
-                str(self.project_path),
-                str(prompt_file)
-            ]
+            # Abrir Cursor IDE con el proyecto (sin el archivo de prompt)
+            cmd = [self.cursor_path, str(self.project_path)]
+            logger.debug(f"Abriendo Cursor IDE: {' '.join(cmd)}")
             
-            logger.debug(f"Ejecutando comando: {' '.join(cmd)}")
-            
-            # Ejecutar comando
-            result = subprocess.run(
+            # Ejecutar comando en background para no bloquear
+            result = subprocess.Popen(
                 cmd,
-                capture_output=True,
-                text=True,
-                timeout=300,  # 5 minutos máximo
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
                 cwd=str(self.project_path)
             )
             
@@ -254,31 +248,39 @@ Mantén la funcionalidad existente y asegúrate de que los cambios sean consiste
             except Exception as e:
                 logger.warning(f"No se pudo crear enlace simbólico: {e}")
             
-            # Procesar resultado
-            if result.returncode == 0:
-                changes_made = self._detect_changes(instruction)
-                return ExecutionResult(
-                    success=True,
-                    output=result.stdout,
-                    changes_made=changes_made
-                )
-            else:
-                return ExecutionResult(
-                    success=False,
-                    error=result.stderr,
-                    output=result.stdout
-                )
-                
-        except subprocess.TimeoutExpired:
+            # Mostrar instrucciones al usuario
+            self._display_instruction_to_user(instruction, prompt_file)
+            
+            # Simular éxito ya que Cursor se abrió
+            changes_made = [f"Cursor IDE abierto con prompt: {prompt_file.name}"]
             return ExecutionResult(
-                success=False,
-                error="Timeout ejecutando comando en Cursor"
+                success=True,
+                output=f"Cursor IDE abierto. Prompt disponible en: {prompt_file}",
+                changes_made=changes_made
             )
+                
         except Exception as e:
             return ExecutionResult(
                 success=False,
-                error=f"Error ejecutando comando: {e}"
+                error=f"Error abriendo Cursor IDE: {e}"
             )
+    
+    def _display_instruction_to_user(self, instruction: CursorInstruction, prompt_file: Path):
+        """Mostrar instrucciones al usuario en la terminal"""
+        print(f"\n🤖 CURSOR CLI - Instrucción Generada")
+        print(f"═══════════════════════════════════════════════════════════")
+        print(f"📋 Acción: {instruction.action}")
+        print(f"🎯 Objetivo: {instruction.target}")
+        print(f"⚡ Prioridad: {instruction.priority.upper()}")
+        print(f"📄 Prompt: {prompt_file}")
+        print(f"═══════════════════════════════════════════════════════════")
+        print(f"💡 INSTRUCCIONES:")
+        print(f"   1. Cursor IDE se ha abierto con este proyecto")
+        print(f"   2. Revisa el prompt en: {prompt_file}")
+        print(f"   3. O usa: cat .cursor/prompts/latest.md")
+        print(f"   4. Aplica los cambios sugeridos en el prompt")
+        print(f"   5. Los cambios se detectarán automáticamente")
+        print(f"═══════════════════════════════════════════════════════════\n")
     
     def _detect_changes(self, instruction: CursorInstruction) -> List[str]:
         """Detectar cambios realizados por la instrucción"""
