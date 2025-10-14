@@ -585,8 +585,38 @@ def start_bidirectional(project_path, interval, daemon, methodology, path):
         )
         
         if daemon:
-            console.print("🔄 Ejecutando como daemon con correcciones automáticas...", style="yellow")
-            supervisor.start_supervision_with_cursor()
+            console.print("🔄 Ejecutando como daemon en segundo plano...", style="yellow")
+            console.print("💡 El proceso continuará ejecutándose en background", style="blue")
+            console.print("🛑 Para detener: pkill -f 'pre-cursor supervisor'", style="yellow")
+            
+            # Ejecutar en segundo plano real
+            import subprocess
+            import sys
+            
+            # Crear comando para ejecutar en background
+            cmd = [
+                sys.executable, '-m', 'pre_cursor.cli', 
+                'supervisor', 'start-bidirectional', 
+                project_path, '--interval', str(interval)
+            ]
+            if methodology:
+                cmd.extend(['--methodology', methodology])
+            
+            # Ejecutar en background con detach
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+                start_new_session=True,
+                cwd=project_path
+            )
+            
+            console.print(f"✅ Daemon iniciado con PID: [bold green]{process.pid}[/bold green]")
+            console.print(f"📁 Directorio: [bold blue]{project_path}[/bold blue]")
+            console.print(f"⏱️ Intervalo: [bold green]{interval}[/bold green] segundos")
+            console.print("📝 Logs disponibles en: logs/supervisor.log")
+            
         else:
             console.print("🔄 Ejecutando verificación única con correcciones...", style="yellow")
             report = supervisor.check_project_health()
@@ -600,6 +630,159 @@ def start_bidirectional(project_path, interval, daemon, methodology, path):
     except ImportError as e:
         console.print(f"❌ Error: Módulo no encontrado: {e}", style="red")
         console.print("💡 Instala las dependencias: pip install watchdog psutil", style="yellow")
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--interval', '-i', type=int, default=60, help='Intervalo de verificación en segundos')
+@click.option('--daemon', '-d', is_flag=True, help='Ejecutar como daemon en background')
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def trigger_monitor(project_path, interval, daemon, path):
+    """
+    🔄 Monitorear triggers para activación automática de Cursor CLI
+    
+    Sistema de triggers que permite activar la supervisión mediante archivos.
+    Ideal para integración con cron y sistemas externos.
+    
+    Ejemplos:
+    pre-cursor supervisor trigger-monitor -p
+    pre-cursor supervisor trigger-monitor -p --daemon --interval 30
+    """
+    try:
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
+        
+        from .trigger_system import TriggerSystem
+        
+        console.print(f"\n🔄 Iniciando monitoreo de triggers en: [bold blue]{project_path}[/bold blue]")
+        console.print(f"⏱️ Intervalo: [bold green]{interval}[/bold green] segundos")
+        
+        trigger_system = TriggerSystem(project_path)
+        
+        if daemon:
+            console.print("🔄 Ejecutando como daemon en segundo plano...", style="yellow")
+            console.print("💡 El proceso continuará ejecutándose en background", style="blue")
+            console.print("🛑 Para detener: pkill -f 'pre-cursor supervisor trigger-monitor'", style="yellow")
+            
+            # Ejecutar en segundo plano real
+            import subprocess
+            import sys
+            
+            # Crear comando para ejecutar en background
+            cmd = [
+                sys.executable, '-m', 'pre_cursor.cli', 
+                'supervisor', 'trigger-monitor', 
+                project_path, '--interval', str(interval)
+            ]
+            
+            # Ejecutar en background con detach
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+                start_new_session=True,
+                cwd=project_path
+            )
+            
+            console.print(f"✅ Daemon iniciado con PID: [bold green]{process.pid}[/bold green]")
+            console.print(f"📁 Directorio: [bold blue]{project_path}[/bold blue]")
+            console.print(f"⏱️ Intervalo: [bold green]{interval}[/bold green] segundos")
+            console.print("📝 Logs disponibles en: logs/supervisor.log")
+            console.print("🔧 Para crear trigger: echo 'supervise' > .cursor/triggers/activate.trigger")
+            
+        else:
+            console.print("🔄 Ejecutando monitoreo continuo...", style="yellow")
+            console.print("💡 Presiona Ctrl+C para detener", style="blue")
+            trigger_system.run_continuous_monitoring(interval)
+            
+    except ImportError as e:
+        console.print(f"❌ Error: Módulo no encontrado: {e}", style="red")
+        console.print("💡 Instala las dependencias: pip install watchdog psutil", style="yellow")
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+@click.option('--action', '-a', default='supervise', help='Acción del trigger')
+@click.option('--content', '-c', default='', help='Contenido del trigger')
+def create_trigger(project_path, path, action, content):
+    """
+    🔧 Crear un trigger para activar la supervisión
+    
+    Crea un archivo de trigger que activará el sistema de monitoreo.
+    
+    Ejemplos:
+    pre-cursor supervisor create-trigger -p
+    pre-cursor supervisor create-trigger -p --action supervise --content "revisar proyecto"
+    """
+    try:
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
+        
+        from .trigger_system import TriggerSystem
+        
+        trigger_system = TriggerSystem(project_path)
+        trigger_system.create_trigger(action, content)
+        
+        console.print(f"✅ Trigger creado: [bold green]{action}[/bold green]")
+        console.print(f"📁 Ubicación: [bold blue]{trigger_system.trigger_file}[/bold blue]")
+        console.print("💡 El sistema de monitoreo detectará este trigger automáticamente")
+        
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def trigger_status(project_path, path):
+    """
+    📊 Mostrar estado del sistema de triggers
+    
+    Muestra el estado actual del sistema de triggers y monitoreo.
+    
+    Ejemplos:
+    pre-cursor supervisor trigger-status -p
+    """
+    try:
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
+        
+        from .trigger_system import TriggerSystem
+        
+        trigger_system = TriggerSystem(project_path)
+        status = trigger_system.get_status()
+        
+        console.print(f"\n📊 Estado del Sistema de Triggers")
+        console.print(f"═══════════════════════════════════════════════════════════")
+        console.print(f"🎯 Rol: [bold blue]{status['role']}[/bold blue]")
+        console.print(f"📈 Estado: [bold green]{status['status']}[/bold green]")
+        console.print(f"🔄 Ciclos completados: [bold yellow]{status['cycle_count']}[/bold yellow]")
+        console.print(f"⏰ Última verificación: [bold blue]{status['last_check'] or 'Nunca'}[/bold blue]")
+        console.print(f"📋 Correcciones pendientes: [bold red]{status['pending_corrections']}[/bold red]")
+        console.print(f"✅ Correcciones aplicadas: [bold green]{status['applied_corrections']}[/bold green]")
+        trigger_color = 'green' if status['trigger_active'] else 'red'
+        trigger_text = 'Sí' if status['trigger_active'] else 'No'
+        console.print(f"🔧 Trigger activo: [bold {trigger_color}]{trigger_text}[/bold {trigger_color}]")
+        console.print(f"═══════════════════════════════════════════════════════════")
+        
     except Exception as e:
         console.print(f"❌ Error: {e}", style="red")
 
