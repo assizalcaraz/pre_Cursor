@@ -241,7 +241,7 @@ Mantén la funcionalidad existente y asegúrate de que los cambios sean consiste
             # Crear enlace simbólico al último prompt
             latest_link = self.prompts_dir / "latest.md"
             try:
-                if latest_link.exists():
+                if latest_link.exists() or latest_link.is_symlink():
                     latest_link.unlink()
                 latest_link.symlink_to(prompt_file.relative_to(self.prompts_dir))
                 logger.debug(f"Enlace simbólico creado: {latest_link} -> {prompt_file}")
