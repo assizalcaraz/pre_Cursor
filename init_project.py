@@ -1063,6 +1063,9 @@ echo "### $(date +%Y-%m-%d)" >> BITACORA.md
             # Inicializar Git
             self.initialize_git(project_path)
             
+            # Integrar supervisión de Cursor (opcional)
+            self._integrate_cursor_supervision(project_path, project_name)
+            
             self.logger.info("Proyecto generado exitosamente")
             
             print()
@@ -1075,6 +1078,7 @@ echo "### $(date +%Y-%m-%d)" >> BITACORA.md
             print("  3. Revisar CONTEXTO.md")
             print("  4. Seguir TUTORIAL.md")
             print("  5. Actualizar BITACORA.md")
+            print("  6. 🤖 Supervisión automática iniciada (si está disponible)")
             
         except ValidationError as e:
             self.logger.error(f"Error de validación: {e}")
@@ -1099,6 +1103,44 @@ echo "### $(date +%Y-%m-%d)" >> BITACORA.md
             print(f"\n❌ Error inesperado: {e}")
             print("💡 Sugerencia: Revisa los logs en 'project_generator.log' para más detalles")
             sys.exit(1)
+    
+    def _integrate_cursor_supervision(self, project_path: Path, project_name: str) -> None:
+        """
+        Integrar supervisión de Cursor si está disponible.
+        
+        Args:
+            project_path: Ruta del proyecto generado
+            project_name: Nombre del proyecto
+        """
+        try:
+            # Importar módulo de integración
+            from pre_cursor.cursor_integration import integrate_with_init_project
+            
+            # Crear configuración del proyecto para el supervisor
+            project_config = {
+                'tipo_proyecto': self.project_data.get('TIPO_PROYECTO', 'Python Library'),
+                'descripcion_proyecto': self.project_data.get('DESCRIPCION_PROYECTO', 'Proyecto generado'),
+                'nombre_proyecto': project_name,
+                'version': self.project_data.get('VERSION_PROYECTO', '1.0.0'),
+                'autor': self.project_data.get('AUTOR', 'Desarrollador'),
+                'email': self.project_data.get('EMAIL', 'dev@example.com')
+            }
+            
+            # Intentar integrar supervisión
+            if integrate_with_init_project(str(project_path), project_config):
+                self.logger.info("Supervisión de Cursor integrada exitosamente")
+                print("🤖 Supervisión automática de Cursor integrada")
+            else:
+                self.logger.warning("No se pudo integrar supervisión de Cursor")
+                print("⚠️  Supervisión de Cursor no disponible (opcional)")
+                
+        except ImportError:
+            self.logger.debug("Módulo de integración de Cursor no disponible")
+            print("ℹ️  Supervisión de Cursor no disponible (módulo no encontrado)")
+        except Exception as e:
+            self.logger.warning(f"Error al integrar supervisión de Cursor: {e}")
+            print(f"⚠️  Error en integración de Cursor: {e}")
+            print("   (El proyecto se generó correctamente sin supervisión)")
     
     def generate_project_from_config(self, config_path: Path, project_path: Optional[Path] = None) -> None:
         """

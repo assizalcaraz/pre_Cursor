@@ -284,9 +284,11 @@ class CursorSupervisor:
                 f.write(content)
             
             self.logger.info("Bitácora actualizada correctamente")
+            return True
                 
         except Exception as e:
             self.logger.error(f"Error al actualizar bitácora: {e}")
+            return False
     
     def _create_bitacora(self):
         """Crear bitácora básica si no existe"""
