@@ -22,6 +22,7 @@ import logging
 
 from .models import CursorInstruction, ExecutionResult
 from .auto_executor import AutoExecutor
+from .cursor_agent_executor import CursorAgentExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +35,9 @@ class CursorCLIInterface:
         self.cursor_available = self._check_cursor_availability()
         self.execution_log = []
         
-        # Inicializar AutoExecutor para ejecución real de cambios
+        # Inicializar ejecutores para diferentes estrategias
         self.auto_executor = AutoExecutor(project_path)
+        self.agent_executor = CursorAgentExecutor(project_path)
         
         # Estructura organizada para archivos de Cursor
         self.cursor_dir = self.project_path / ".cursor"
@@ -113,28 +115,52 @@ class CursorCLIInterface:
             return self._simulate_execution(instruction)
         
         try:
-            # Usar AutoExecutor para ejecución real de cambios
-            auto_result = self.auto_executor.execute_instruction(instruction)
-            
-            if auto_result["success"]:
-                # Generar prompt para referencia (opcional)
-                prompt = self._generate_cursor_prompt(instruction)
-                self._save_prompt_for_reference(prompt, instruction)
+            # Intentar usar Cursor Agent CLI primero (más inteligente)
+            if self.agent_executor.agent_available:
+                logger.info("Usando Cursor Agent CLI para ejecución inteligente")
+                agent_result = self.agent_executor.execute_instruction(instruction)
                 
-                # Crear resultado exitoso
-                result = type('Result', (), {
-                    'success': True,
-                    'output': auto_result.get("message", "Cambios aplicados automáticamente"),
-                    'changes_made': auto_result.get("changes_made", []),
-                    'error': None
-                })()
+                if agent_result["success"]:
+                    # Crear resultado exitoso con Cursor Agent
+                    result = type('Result', (), {
+                        'success': True,
+                        'output': agent_result.get("message", "Cambios aplicados con Cursor Agent CLI"),
+                        'changes_made': agent_result.get("changes_made", []),
+                        'error': None
+                    })()
+                else:
+                    # Si falla Cursor Agent, usar AutoExecutor como fallback
+                    logger.info("Cursor Agent falló, usando AutoExecutor como fallback")
+                    auto_result = self.auto_executor.execute_instruction(instruction)
+                    
+                    if auto_result["success"]:
+                        result = type('Result', (), {
+                            'success': True,
+                            'output': f"AutoExecutor: {auto_result.get('message', 'Cambios aplicados automáticamente')}",
+                            'changes_made': auto_result.get("changes_made", []),
+                            'error': None
+                        })()
+                    else:
+                        # Si ambos fallan, usar método original
+                        prompt = self._generate_cursor_prompt(instruction)
+                        result = self._run_cursor_command(prompt, instruction)
+                        result.error = f"Agent failed: {agent_result.get('error')}. AutoExecutor failed: {auto_result.get('error')}. {getattr(result, 'error', '') or ''}"
             else:
-                # Si falla la ejecución automática, usar método original como fallback
-                prompt = self._generate_cursor_prompt(instruction)
-                result = self._run_cursor_command(prompt, instruction)
+                # Si Cursor Agent no está disponible, usar AutoExecutor
+                logger.info("Cursor Agent no disponible, usando AutoExecutor")
+                auto_result = self.auto_executor.execute_instruction(instruction)
                 
-                # Agregar información del error
-                if not result.success:
+                if auto_result["success"]:
+                    result = type('Result', (), {
+                        'success': True,
+                        'output': auto_result.get("message", "Cambios aplicados automáticamente"),
+                        'changes_made': auto_result.get("changes_made", []),
+                        'error': None
+                    })()
+                else:
+                    # Si falla AutoExecutor, usar método original
+                    prompt = self._generate_cursor_prompt(instruction)
+                    result = self._run_cursor_command(prompt, instruction)
                     result.error = f"AutoExecutor failed: {auto_result.get('error', 'Unknown error')}. {getattr(result, 'error', '') or ''}"
             
             execution_time = time.time() - start_time
