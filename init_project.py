@@ -207,6 +207,16 @@ class ProjectGenerator:
             "DESCRIPCION_FUNCION_UTILITARIA": "Función utilitaria",
             "DESCRIPCION_RETORNO": "Resultado del procesamiento",
             "DESCRIPCION_RETORNO_SECUNDARIO": "Estado de la validación",
+            
+            # Variables específicas para CURSOR_GUIDE.md
+            "DESCRIPCION_TIPO_PROYECTO": self._get_project_type_description(tipo_proyecto),
+            "CARACTERISTICA_1": self._get_characteristic_1(tipo_proyecto),
+            "CARACTERISTICA_2": self._get_characteristic_2(tipo_proyecto),
+            "CARACTERISTICA_3": self._get_characteristic_3(tipo_proyecto),
+            "CASO_USO_1": self._get_use_case_1(tipo_proyecto),
+            "CASO_USO_2": self._get_use_case_2(tipo_proyecto),
+            "CASO_USO_3": self._get_use_case_3(tipo_proyecto),
+            "VERSION_PROYECTO": "1.0.0",
             "DESCRIPCION_RETORNO_FUNCION": "Resultado de la función",
             "DOCSTRING_PARAMETROS": "config: Configuración opcional",
             "DOCSTRING_PARAMETROS_METODO": "datos: Datos a procesar",
@@ -532,7 +542,8 @@ class ProjectGenerator:
         base_templates = [
             "BITACORA.md.tpl", 
             "roadmap_v1.md.tpl",
-            "TUTORIAL.md.tpl"
+            "TUTORIAL.md.tpl",
+            "CURSOR_GUIDE.md.tpl"  # Guía específica para Cursor AI
         ]
         
         # Plantillas específicas por tipo de proyecto
@@ -1182,6 +1193,126 @@ echo "### $(date +%Y-%m-%d)" >> BITACORA.md
             print(f"\n❌ Error inesperado: {e}")
             print("💡 Sugerencia: Revisa los logs en 'project_generator.log' para más detalles")
             sys.exit(1)
+
+
+    def _get_project_type_description(self, project_type: str) -> str:
+        """Obtener descripción del tipo de proyecto para la guía de Cursor."""
+        descriptions = {
+            "Python Library": "Librería Python estándar con funcionalidades reutilizables",
+            "Python CLI Tool": "Herramienta de línea de comandos para automatización",
+            "Python Web App (Flask)": "Aplicación web moderna con framework Flask",
+            "Python Web App (Django)": "Aplicación web robusta con framework Django",
+            "Python Web App (FastAPI)": "API REST moderna y rápida con FastAPI",
+            "Python Data Science": "Proyecto de análisis y visualización de datos",
+            "Python ML/AI": "Proyecto de machine learning e inteligencia artificial",
+            "C++ Project": "Proyecto en C++ con CMake y testing",
+            "Node.js Project": "Aplicación Node.js con npm y testing",
+            "TD_MCP Project": "Proyecto MCP para integración con TouchDesigner",
+            "Otro": "Proyecto personalizado con configuración flexible"
+        }
+        return descriptions.get(project_type, "Proyecto personalizado")
+    
+    def _get_characteristic_1(self, project_type: str) -> str:
+        """Obtener primera característica del proyecto."""
+        characteristics = {
+            "Python Library": "Código modular y reutilizable",
+            "Python CLI Tool": "Interfaz de línea de comandos intuitiva",
+            "Python Web App (Flask)": "Arquitectura web escalable",
+            "Python Web App (Django)": "Framework web completo y robusto",
+            "Python Web App (FastAPI)": "API REST de alto rendimiento",
+            "Python Data Science": "Análisis de datos con pandas y numpy",
+            "Python ML/AI": "Modelos de machine learning entrenables",
+            "C++ Project": "Código C++ optimizado y eficiente",
+            "Node.js Project": "Aplicación JavaScript del lado servidor",
+            "TD_MCP Project": "Integración nativa con TouchDesigner",
+            "Otro": "Configuración personalizable"
+        }
+        return characteristics.get(project_type, "Funcionalidad personalizada")
+    
+    def _get_characteristic_2(self, project_type: str) -> str:
+        """Obtener segunda característica del proyecto."""
+        characteristics = {
+            "Python Library": "Documentación completa y ejemplos",
+            "Python CLI Tool": "Configuración flexible y opciones avanzadas",
+            "Python Web App (Flask)": "Templates y rutas organizadas",
+            "Python Web App (Django)": "Sistema de administración incluido",
+            "Python Web App (FastAPI)": "Documentación automática con Swagger",
+            "Python Data Science": "Visualizaciones con matplotlib/seaborn",
+            "Python ML/AI": "Pipeline de entrenamiento y evaluación",
+            "C++ Project": "Sistema de build con CMake",
+            "Node.js Project": "Gestión de dependencias con npm",
+            "TD_MCP Project": "Protocolo MCP para comunicación",
+            "Otro": "Estructura de proyecto profesional"
+        }
+        return characteristics.get(project_type, "Arquitectura bien definida")
+    
+    def _get_characteristic_3(self, project_type: str) -> str:
+        """Obtener tercera característica del proyecto."""
+        characteristics = {
+            "Python Library": "Testing completo con pytest",
+            "Python CLI Tool": "Logging y manejo de errores robusto",
+            "Python Web App (Flask)": "Base de datos integrada",
+            "Python Web App (Django)": "ORM potente y migraciones",
+            "Python Web App (FastAPI)": "Validación automática de datos",
+            "Python Data Science": "Jupyter notebooks incluidos",
+            "Python ML/AI": "Modelos exportables y versionados",
+            "C++ Project": "Testing con Google Test",
+            "Node.js Project": "Testing con Jest",
+            "TD_MCP Project": "Configuración JSON flexible",
+            "Otro": "Testing y documentación completos"
+        }
+        return characteristics.get(project_type, "Testing y validación incluidos")
+    
+    def _get_use_case_1(self, project_type: str) -> str:
+        """Obtener primer caso de uso del proyecto."""
+        use_cases = {
+            "Python Library": "Importar y usar en otros proyectos Python",
+            "Python CLI Tool": "Automatizar tareas desde terminal",
+            "Python Web App (Flask)": "Desplegar aplicación web en servidor",
+            "Python Web App (Django)": "Crear sistema web completo con admin",
+            "Python Web App (FastAPI)": "Exponer API REST para frontend/móvil",
+            "Python Data Science": "Analizar datasets y generar reportes",
+            "Python ML/AI": "Entrenar y desplegar modelos de IA",
+            "C++ Project": "Compilar y ejecutar aplicación nativa",
+            "Node.js Project": "Ejecutar servidor web o API",
+            "TD_MCP Project": "Conectar con TouchDesigner via MCP",
+            "Otro": "Implementar funcionalidad específica"
+        }
+        return use_cases.get(project_type, "Resolver problema específico")
+    
+    def _get_use_case_2(self, project_type: str) -> str:
+        """Obtener segundo caso de uso del proyecto."""
+        use_cases = {
+            "Python Library": "Distribuir via PyPI o pip",
+            "Python CLI Tool": "Integrar en scripts de automatización",
+            "Python Web App (Flask)": "Desarrollar API REST simple",
+            "Python Web App (Django)": "Crear CMS o sistema de gestión",
+            "Python Web App (FastAPI)": "Construir microservicios escalables",
+            "Python Data Science": "Crear dashboards interactivos",
+            "Python ML/AI": "Integrar en aplicaciones de producción",
+            "C++ Project": "Crear bibliotecas de alto rendimiento",
+            "Node.js Project": "Desarrollar aplicaciones full-stack",
+            "TD_MCP Project": "Crear herramientas para artistas digitales",
+            "Otro": "Personalizar según necesidades específicas"
+        }
+        return use_cases.get(project_type, "Adaptar a requerimientos únicos")
+    
+    def _get_use_case_3(self, project_type: str) -> str:
+        """Obtener tercer caso de uso del proyecto."""
+        use_cases = {
+            "Python Library": "Contribuir a ecosistema Python",
+            "Python CLI Tool": "Crear herramientas de DevOps",
+            "Python Web App (Flask)": "Prototipar aplicaciones rápidamente",
+            "Python Web App (Django)": "Desarrollar aplicaciones empresariales",
+            "Python Web App (FastAPI)": "Construir APIs para IoT o móviles",
+            "Python Data Science": "Realizar investigación científica",
+            "Python ML/AI": "Crear sistemas de recomendación",
+            "C++ Project": "Desarrollar software de sistemas",
+            "Node.js Project": "Crear aplicaciones en tiempo real",
+            "TD_MCP Project": "Desarrollar instalaciones interactivas",
+            "Otro": "Experimentar con nuevas tecnologías"
+        }
+        return use_cases.get(project_type, "Explorar posibilidades creativas")
 
 
 def main():

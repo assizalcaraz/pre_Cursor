@@ -1,5 +1,5 @@
 # 🚀 Guía Paso a Paso: Crear Proyecto con Pre-Cursor CLI
-## (A prueba de tarados - Instrucciones súper detalladas)
+
 
 ### 📋 Índice
 1. [Verificar Requisitos](#1-verificar-requisitos)
