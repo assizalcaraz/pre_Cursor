@@ -79,9 +79,12 @@ class CursorInstructionGenerator:
         
         logger.info(f"Generando instrucciones para {len(report.issues_found)} problemas detectados")
         
+        # Cargar configuración de severidades a procesar
+        process_severities = self._get_process_severities()
+        
         for issue in report.issues_found:
-            # Solo procesar problemas de alta prioridad para evitar spam
-            if issue.severity in ['high', 'critical']:
+            # Procesar problemas según configuración
+            if issue.severity in process_severities:
                 instruction = self._create_instruction_for_issue(issue)
                 if instruction:
                     instructions.append(instruction)
@@ -93,6 +96,25 @@ class CursorInstructionGenerator:
         
         logger.info(f"Generadas {len(instructions)} instrucciones para Cursor CLI")
         return instructions
+    
+    def _get_process_severities(self) -> List[str]:
+        """Obtener severidades a procesar desde configuración"""
+        config_path = self.project_path / "config" / "cursor_supervisor.yaml"
+        
+        if config_path.exists():
+            try:
+                import yaml
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = yaml.safe_load(f)
+                
+                severities = config.get('cursor_integration', {}).get('process_severities', ['high', 'critical'])
+                logger.debug(f"Severidades configuradas: {severities}")
+                return severities
+            except Exception as e:
+                logger.warning(f"Error cargando configuración: {e}")
+        
+        # Configuración por defecto (conservadora)
+        return ['high', 'critical']
     
     def _create_instruction_for_issue(self, issue: ProjectIssue) -> Optional[CursorInstruction]:
         """Crear instrucción específica para un problema"""
@@ -168,7 +190,7 @@ Metodología: Evitar duplicación de código, crear funciones reutilizables.
         """Crear instrucción para problema de estructura"""
         context = f"""
 Problema de estructura detectado: {issue.description}
-Archivo: {issue.file_path}
+Archivo: {issue.file_path if issue.file_path else "Múltiples archivos"}
 
 Acción requerida: Reorganizar estructura del proyecto según metodología.
 Metodología: {self.methodology.get('file_organization', {})}
@@ -176,7 +198,7 @@ Metodología: {self.methodology.get('file_organization', {})}
         
         return CursorInstruction(
             action="reorganize_structure",
-            target=str(issue.file_path),
+            target=str(issue.file_path) if issue.file_path else "proyecto",
             context=context,
             methodology_reference="file_organization",
             priority="high"
