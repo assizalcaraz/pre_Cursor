@@ -17,8 +17,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 import logging
 
-from .cursor_instruction_generator import CursorInstruction
-from .cursor_cli_interface import ExecutionResult
+from .models import CursorInstruction, ExecutionResult
 
 logger = logging.getLogger(__name__)
 

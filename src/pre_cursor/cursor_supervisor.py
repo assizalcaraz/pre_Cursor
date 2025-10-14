@@ -23,6 +23,9 @@ from dataclasses import dataclass
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+# Importar modelos compartidos
+from .models import ProjectIssue, SupervisionReport
+
 # Importar módulos de integración bidireccional
 from .cursor_instruction_generator import CursorInstructionGenerator
 from .cursor_cli_interface import CursorCLIInterface
@@ -35,29 +38,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-@dataclass
-class ProjectIssue:
-    """Representa un problema detectado en el proyecto"""
-    type: str
-    severity: str  # 'low', 'medium', 'high', 'critical'
-    description: str
-    file_path: Optional[str] = None
-    suggestion: Optional[str] = None
-    timestamp: datetime = None
-    
-    def __post_init__(self):
-        if self.timestamp is None:
-            self.timestamp = datetime.now()
-
-@dataclass
-class SupervisionReport:
-    """Reporte de supervisión del proyecto"""
-    timestamp: datetime
-    issues_found: List[ProjectIssue]
-    files_created: List[str]
-    files_modified: List[str]
-    structure_changes: List[str]
-    recommendations: List[str]
 
 class ProjectStructureMonitor:
     """Monitor de estructura del proyecto"""

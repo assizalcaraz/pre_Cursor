@@ -17,39 +17,9 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 import logging
 
-from .cursor_supervisor import SupervisionReport, ProjectIssue
+from .models import SupervisionReport, ProjectIssue, CursorInstruction
 
 logger = logging.getLogger(__name__)
-
-class CursorInstruction:
-    """Instrucción específica para Cursor CLI"""
-    
-    def __init__(self, action: str, target: str, context: str, 
-                 methodology_reference: str = "", priority: str = "medium"):
-        self.action = action
-        self.target = target
-        self.context = context
-        self.methodology_reference = methodology_reference
-        self.priority = priority
-        self.timestamp = datetime.now()
-        self.status = "pending"
-        self.result = None
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """Convertir instrucción a diccionario"""
-        return {
-            "action": self.action,
-            "target": self.target,
-            "context": self.context,
-            "methodology_reference": self.methodology_reference,
-            "priority": self.priority,
-            "timestamp": self.timestamp.isoformat(),
-            "status": self.status,
-            "result": self.result
-        }
-    
-    def __str__(self) -> str:
-        return f"CursorInstruction(action={self.action}, target={self.target}, priority={self.priority})"
 
 class CursorInstructionGenerator:
     """Generador de instrucciones para Cursor CLI basado en reportes de supervisión"""

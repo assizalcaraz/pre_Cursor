@@ -20,36 +20,9 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime
 import logging
 
-from .cursor_instruction_generator import CursorInstruction
+from .models import CursorInstruction, ExecutionResult
 
 logger = logging.getLogger(__name__)
-
-class ExecutionResult:
-    """Resultado de la ejecución de una instrucción"""
-    
-    def __init__(self, success: bool, output: str = "", error: str = "", 
-                 changes_made: List[str] = None, execution_time: float = 0.0):
-        self.success = success
-        self.output = output
-        self.error = error
-        self.changes_made = changes_made or []
-        self.execution_time = execution_time
-        self.timestamp = datetime.now()
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """Convertir resultado a diccionario"""
-        return {
-            "success": self.success,
-            "output": self.output,
-            "error": self.error,
-            "changes_made": self.changes_made,
-            "execution_time": self.execution_time,
-            "timestamp": self.timestamp.isoformat()
-        }
-    
-    def __str__(self) -> str:
-        status = "✅ Éxito" if self.success else "❌ Error"
-        return f"ExecutionResult({status}, time={self.execution_time:.2f}s)"
 
 class CursorCLIInterface:
     """Interfaz para ejecutar instrucciones en Cursor CLI"""
