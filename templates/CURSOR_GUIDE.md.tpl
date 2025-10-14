@@ -34,17 +34,29 @@ Este proyecto sigue la metodología establecida de Pre-Cursor, optimizada para d
 ### 3. **Estructura base a seguir**
 ```
 $NOMBRE_PROYECTO/
-├── README.md              # Documentación principal
-├── TUTORIAL.md            # Guía de uso
-├── BITACORA.md            # Log de desarrollo
-├── CURSOR_GUIDE.md        # Este archivo (para IA)
-├── requirements.txt       # Dependencias
-├── src/                   # Código fuente
+├── README.md                    # Documentación principal
+├── CONTEXTO.md                  # Contexto del proyecto
+├── requirements.txt             # Dependencias
+├── src/                         # Código fuente
 │   ├── $MODULO_PRINCIPAL.py
 │   └── utils/
-├── tests/                 # Pruebas
-└── docs/                  # Documentación adicional
+├── tests/                       # Pruebas
+├── docs/                        # Documentación técnica
+│   ├── TUTORIAL.md              # Guía de uso
+│   ├── BITACORA.md              # Log de desarrollo
+│   ├── CURSOR_GUIDE.md          # Este archivo (para IA)
+│   ├── roadmap_v1.md            # Plan de desarrollo
+│   └── METODOLOGIA_DESARROLLO.md # Metodología establecida
+└── examples/                    # Ejemplos de uso
 ```
+
+### 4. **Organización de archivos**
+- **📁 docs/**: Toda la documentación técnica va aquí
+- **📁 src/**: Código fuente principal
+- **📁 tests/**: Pruebas unitarias y de integración
+- **📁 examples/**: Ejemplos de uso y demos
+- **📄 README.md**: Documentación principal (en raíz)
+- **📄 CONTEXTO.md**: Contexto del proyecto (en raíz)
 
 ---
 

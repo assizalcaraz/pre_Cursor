@@ -847,6 +847,9 @@ class ProjectGenerator:
                 return project_path / "docs" / "TUTORIAL.md"
             elif template_name.endswith(".tpl"):
                 dest_name = template_name[:-4]
+                # Colocar archivos de documentación en docs/
+                if dest_name.endswith('.md') and dest_name not in ['README.md', 'CONTEXTO.md']:
+                    return project_path / "docs" / dest_name
                 return project_path / dest_name
             else:
                 return project_path / template_name
@@ -862,6 +865,9 @@ class ProjectGenerator:
                 return project_path / "docs" / "TUTORIAL.md"
             elif template_name.endswith(".tpl"):
                 dest_name = template_name[:-4]
+                # Colocar archivos de documentación en docs/
+                if dest_name.endswith('.md') and dest_name not in ['README.md', 'CONTEXTO.md']:
+                    return project_path / "docs" / dest_name
                 return project_path / dest_name
             else:
                 return project_path / template_name
@@ -881,6 +887,9 @@ class ProjectGenerator:
                 return project_path / "docs" / "TUTORIAL.md"
             elif template_name.endswith(".tpl"):
                 dest_name = template_name[:-4]
+                # Colocar archivos de documentación en docs/
+                if dest_name.endswith('.md') and dest_name not in ['README.md', 'CONTEXTO.md']:
+                    return project_path / "docs" / dest_name
                 return project_path / dest_name
             else:
                 return project_path / template_name
@@ -892,6 +901,9 @@ class ProjectGenerator:
                 return project_path / "docs" / "TUTORIAL.md"
             elif template_name.endswith(".tpl"):
                 dest_name = template_name[:-4]
+                # Colocar archivos de documentación en docs/
+                if dest_name.endswith('.md') and dest_name not in ['README.md', 'CONTEXTO.md']:
+                    return project_path / "docs" / dest_name
                 return project_path / dest_name
             else:
                 return project_path / template_name
