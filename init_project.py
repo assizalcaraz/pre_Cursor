@@ -491,7 +491,7 @@ class ProjectGenerator:
         print("  ✅ tests/README.md")
         
         # Copiar METODOLOGIA_DESARROLLO.md
-        metodologia_src = Path(__file__).parent / "METODOLOGIA_DESARROLLO.md"
+        metodologia_src = Path(__file__).parent / "docs" / "METODOLOGIA_DESARROLLO.md"
         metodologia_dst = project_path / "METODOLOGIA_DESARROLLO.md"
         shutil.copy2(metodologia_src, metodologia_dst)
         print("  ✅ METODOLOGIA_DESARROLLO.md")
