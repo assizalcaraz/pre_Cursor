@@ -217,11 +217,8 @@ Mantén la funcionalidad existente y asegúrate de que los cambios sean consiste
                 cwd=str(self.project_path)
             )
             
-            # Limpiar archivo temporal
-            try:
-                prompt_file.unlink()
-            except OSError:
-                pass
+            # Mantener archivo de prompt para referencia (no eliminar)
+            logger.info(f"Archivo de prompt creado: {prompt_file}")
             
             # Procesar resultado
             if result.returncode == 0:
