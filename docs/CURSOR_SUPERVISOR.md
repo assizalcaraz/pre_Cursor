@@ -59,7 +59,31 @@ pip install -e .
 
 ## 🔧 Uso
 
-### **Supervisión básica:**
+### **Gestión desde CLI (Recomendado):**
+```bash
+# Verificar estado del supervisor
+pre-cursor supervisor status /path/to/project
+
+# Iniciar supervisión (verificación única)
+pre-cursor supervisor start /path/to/project
+
+# Iniciar supervisión continua (daemon)
+pre-cursor supervisor start /path/to/project --daemon --interval 600
+
+# Configurar supervisor
+pre-cursor supervisor config /path/to/project --interval 300 --auto-fix true
+
+# Corregir problemas detectados
+pre-cursor supervisor fix /path/to/project --fix
+
+# Ver logs del supervisor
+pre-cursor supervisor logs /path/to/project
+
+# Detener supervisión
+pre-cursor supervisor stop /path/to/project
+```
+
+### **Uso programático:**
 ```python
 from pre_cursor.cursor_supervisor import CursorSupervisor
 
@@ -80,13 +104,101 @@ for issue in report.issues_found:
     print(f"- {issue.severity.upper()}: {issue.description}")
 ```
 
-### **Desde línea de comandos:**
+### **Desde línea de comandos (método directo):**
 ```bash
 # Verificación única
 python -m pre_cursor.cursor_supervisor /path/to/project --once
 
 # Supervisión continua
 python -m pre_cursor.cursor_supervisor /path/to/project --interval 300
+```
+
+---
+
+## 🎛️ Gestión CLI del Supervisor
+
+### **Comandos Disponibles:**
+
+#### **`pre-cursor supervisor start`**
+Inicia supervisión del proyecto.
+```bash
+# Verificación única
+pre-cursor supervisor start /path/to/project
+
+# Supervisión continua (daemon)
+pre-cursor supervisor start /path/to/project --daemon
+
+# Con intervalo personalizado
+pre-cursor supervisor start /path/to/project --interval 600 --daemon
+```
+
+#### **`pre-cursor supervisor status`**
+Verifica el estado actual del supervisor.
+```bash
+pre-cursor supervisor status /path/to/project
+```
+**Muestra:**
+- Estado de supervisión activa
+- Procesos en ejecución
+- Configuración actual
+- Reporte de problemas recientes
+
+#### **`pre-cursor supervisor config`**
+Configura parámetros del supervisor.
+```bash
+# Configurar intervalo
+pre-cursor supervisor config /path/to/project --interval 300
+
+# Habilitar corrección automática
+pre-cursor supervisor config /path/to/project --auto-fix true
+
+# Cambiar nivel de logging
+pre-cursor supervisor config /path/to/project --log-level DEBUG
+
+# Configuración completa
+pre-cursor supervisor config /path/to/project --interval 600 --auto-fix true --log-level INFO
+```
+
+#### **`pre-cursor supervisor fix`**
+Corrige problemas detectados en el proyecto.
+```bash
+# Solo mostrar problemas
+pre-cursor supervisor fix /path/to/project
+
+# Aplicar correcciones automáticas
+pre-cursor supervisor fix /path/to/project --fix
+```
+
+#### **`pre-cursor supervisor logs`**
+Muestra logs del supervisor.
+```bash
+pre-cursor supervisor logs /path/to/project
+```
+
+#### **`pre-cursor supervisor stop`**
+Detiene la supervisión activa.
+```bash
+pre-cursor supervisor stop /path/to/project
+```
+
+### **Configuración por Proyecto:**
+Cada proyecto puede tener su propia configuración en `config/cursor_supervisor.yaml`:
+```yaml
+supervisor:
+  check_interval: 300
+  auto_fix: true
+  log_level: "INFO"
+  max_issues: 10
+
+detection:
+  check_misplaced_files: true
+  check_duplicates: true
+  check_structure: true
+
+notifications:
+  console: true
+  file_logging: true
+  log_file: "logs/supervisor.log"
 ```
 
 ---

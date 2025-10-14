@@ -67,6 +67,8 @@ python3 init_project.py --config mi_config.json
 - **Actualización automática** de bitácora
 - **Corrección automática** de problemas simples
 - **Integración con Cursor IDE** para supervisión continua
+- **Gestión CLI completa** con comandos dedicados
+- **Configuración por proyecto** flexible y personalizable
 ```
 
 ### Uso Básico
@@ -95,6 +97,30 @@ Pre-Cursor incluye una interfaz de línea de comandos moderna y profesional con 
 - **Configuración flexible**: Soporte para JSON y YAML
 
 ### 🚀 Comandos Principales
+
+#### Gestión del Supervisor
+```bash
+# Verificar estado del supervisor
+pre-cursor supervisor status /path/to/project
+
+# Iniciar supervisión (verificación única)
+pre-cursor supervisor start /path/to/project
+
+# Iniciar supervisión continua (daemon)
+pre-cursor supervisor start /path/to/project --daemon --interval 600
+
+# Configurar supervisor
+pre-cursor supervisor config /path/to/project --interval 300 --auto-fix true
+
+# Corregir problemas detectados
+pre-cursor supervisor fix /path/to/project --fix
+
+# Ver logs del supervisor
+pre-cursor supervisor logs /path/to/project
+
+# Detener supervisión
+pre-cursor supervisor stop /path/to/project
+```
 
 #### Crear Proyectos
 ```bash
