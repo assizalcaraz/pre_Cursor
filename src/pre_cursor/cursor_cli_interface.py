@@ -203,7 +203,7 @@ Mantén la funcionalidad existente y asegúrate de que los cambios sean consiste
             cmd = [
                 self.cursor_path,
                 str(self.project_path),
-                prompt_file
+                str(prompt_file)
             ]
             
             logger.debug(f"Ejecutando comando: {' '.join(cmd)}")
