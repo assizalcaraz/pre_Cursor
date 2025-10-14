@@ -233,18 +233,26 @@ class TriggerSystem:
             "status": state["status"]
         }
     
-    def run_continuous_monitoring(self, check_interval: int = 60):
+    def run_continuous_monitoring(self, check_interval: int = 60, auto_supervise: bool = True):
         """Ejecutar monitoreo continuo del sistema de triggers"""
         logger.info(f"Iniciando monitoreo continuo cada {check_interval} segundos")
+        if auto_supervise:
+            logger.info("Supervisión automática habilitada - ejecutando ciclos automáticamente")
         
         try:
             while True:
+                # Verificar triggers primero
                 if self.check_trigger():
                     logger.info("Trigger detectado - ejecutando ciclo de supervisión")
                     result = self.run_supervision_cycle()
                     logger.info(f"Ciclo completado: {result}")
+                elif auto_supervise:
+                    # Si no hay triggers pero auto_supervise está habilitado, ejecutar supervisión automática
+                    logger.info("Ejecutando supervisión automática")
+                    result = self.run_supervision_cycle()
+                    logger.info(f"Supervisión automática completada: {result}")
                 else:
-                    logger.debug("No hay triggers activos")
+                    logger.debug("No hay triggers activos y supervisión automática deshabilitada")
                 
                 time.sleep(check_interval)
                 

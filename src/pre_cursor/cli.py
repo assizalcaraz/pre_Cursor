@@ -593,10 +593,10 @@ def start_bidirectional(project_path, interval, daemon, methodology, path):
             import subprocess
             import sys
             
-            # Crear comando para ejecutar en background
+            # Crear comando para ejecutar en background usando trigger-monitor
             cmd = [
                 sys.executable, '-m', 'pre_cursor.cli', 
-                'supervisor', 'start-bidirectional', 
+                'supervisor', 'trigger-monitor', 
                 project_path, '--interval', str(interval)
             ]
             if methodology:
@@ -700,7 +700,8 @@ def trigger_monitor(project_path, interval, daemon, path):
         else:
             console.print("🔄 Ejecutando monitoreo continuo...", style="yellow")
             console.print("💡 Presiona Ctrl+C para detener", style="blue")
-            trigger_system.run_continuous_monitoring(interval)
+            console.print("🤖 Supervisión automática habilitada", style="green")
+            trigger_system.run_continuous_monitoring(interval, auto_supervise=True)
             
     except ImportError as e:
         console.print(f"❌ Error: Módulo no encontrado: {e}", style="red")
