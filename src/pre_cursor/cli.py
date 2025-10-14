@@ -29,7 +29,7 @@ from init_project import ProjectGenerator
 console = Console()
 
 @click.group()
-@click.version_option(version="1.0.1", prog_name="pre-cursor")
+@click.version_option(version="1.0.2", prog_name="pre-cursor")
 @click.option('--verbose', '-v', is_flag=True, help='Activar modo verbose')
 @click.option('--config', '-c', type=click.Path(exists=True), help='Archivo de configuración')
 @click.pass_context
@@ -212,6 +212,270 @@ def list_types():
     
     console.print(table)
 
+@cli.group()
+def supervisor():
+    """
+    🤖 Gestión del Cursor Supervisor
+    
+    Comandos para gestionar la supervisión automática de proyectos.
+    """
+    pass
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True))
+@click.option('--interval', '-i', type=int, default=300, help='Intervalo de supervisión en segundos')
+@click.option('--daemon', '-d', is_flag=True, help='Ejecutar como daemon en background')
+def start(project_path, interval, daemon):
+    """
+    🚀 Iniciar supervisión del proyecto
+    
+    Ejemplos:
+    pre-cursor supervisor start /path/to/project
+    pre-cursor supervisor start /path/to/project --interval 600
+    pre-cursor supervisor start /path/to/project --daemon
+    """
+    try:
+        from pre_cursor.cursor_supervisor import CursorSupervisor
+        
+        console.print(f"\n🤖 Iniciando supervisión de: [bold blue]{project_path}[/bold blue]")
+        console.print(f"⏱️ Intervalo: [bold green]{interval}[/bold green] segundos")
+        
+        supervisor = CursorSupervisor(project_path, check_interval=interval)
+        
+        if daemon:
+            console.print("🔄 Ejecutando como daemon...", style="yellow")
+            supervisor.start_supervision()
+        else:
+            console.print("🔄 Ejecutando verificación única...", style="yellow")
+            report = supervisor.check_project_health()
+            _display_supervision_report(report)
+            
+    except ImportError:
+        console.print("❌ Error: Módulo cursor_supervisor no encontrado", style="red")
+        console.print("💡 Instala las dependencias: pip install watchdog psutil", style="yellow")
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True))
+def status(project_path):
+    """
+    📊 Verificar estado del supervisor
+    
+    Ejemplos:
+    pre-cursor supervisor status /path/to/project
+    """
+    try:
+        from pre_cursor.cursor_supervisor import CursorSupervisor
+        
+        console.print(f"\n📊 Estado del supervisor para: [bold blue]{project_path}[/bold blue]")
+        
+        supervisor = CursorSupervisor(project_path)
+        report = supervisor.check_project_health()
+        
+        _display_supervision_report(report)
+        
+        # Verificar si hay supervisión activa
+        _check_active_supervision(project_path)
+        
+    except ImportError:
+        console.print("❌ Error: Módulo cursor_supervisor no encontrado", style="red")
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True))
+@click.option('--interval', '-i', type=int, help='Nuevo intervalo en segundos')
+@click.option('--auto-fix', type=click.Choice(['true', 'false']), help='Habilitar/deshabilitar corrección automática')
+@click.option('--log-level', type=click.Choice(['DEBUG', 'INFO', 'WARNING', 'ERROR']), help='Nivel de logging')
+def config(project_path, interval, auto_fix, log_level):
+    """
+    ⚙️ Configurar supervisor del proyecto
+    
+    Ejemplos:
+    pre-cursor supervisor config /path/to/project --interval 600
+    pre-cursor supervisor config /path/to/project --auto-fix true
+    pre-cursor supervisor config /path/to/project --log-level DEBUG
+    """
+    try:
+        import yaml
+        from pathlib import Path
+        
+        config_path = Path(project_path) / 'config' / 'cursor_supervisor.yaml'
+        
+        # Crear directorio config si no existe
+        config_path.parent.mkdir(exist_ok=True)
+        
+        # Cargar configuración existente o crear nueva
+        if config_path.exists():
+            with open(config_path, 'r') as f:
+                config_data = yaml.safe_load(f) or {}
+        else:
+            config_data = {}
+        
+        # Actualizar configuración
+        if interval:
+            config_data.setdefault('supervisor', {})['check_interval'] = interval
+            console.print(f"✅ Intervalo actualizado a {interval} segundos", style="green")
+        
+        if auto_fix:
+            config_data.setdefault('supervisor', {})['auto_fix'] = auto_fix == 'true'
+            console.print(f"✅ Corrección automática: {auto_fix}", style="green")
+        
+        if log_level:
+            config_data.setdefault('supervisor', {})['log_level'] = log_level
+            console.print(f"✅ Nivel de logging: {log_level}", style="green")
+        
+        # Guardar configuración
+        with open(config_path, 'w') as f:
+            yaml.dump(config_data, f, default_flow_style=False, sort_keys=False)
+        
+        console.print(f"✅ Configuración guardada en: [bold green]{config_path}[/bold green]")
+        
+        # Mostrar configuración actual
+        _display_supervisor_config(config_data)
+        
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True))
+def stop(project_path):
+    """
+    🛑 Detener supervisión del proyecto
+    
+    Ejemplos:
+    pre-cursor supervisor stop /path/to/project
+    """
+    try:
+        import psutil
+        import os
+        
+        console.print(f"\n🛑 Deteniendo supervisión de: [bold blue]{project_path}[/bold blue]")
+        
+        # Buscar procesos de supervisor activos
+        supervisor_processes = []
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            try:
+                if proc.info['cmdline'] and any('cursor_supervisor' in arg for arg in proc.info['cmdline']):
+                    if project_path in ' '.join(proc.info['cmdline']):
+                        supervisor_processes.append(proc)
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+        
+        if supervisor_processes:
+            for proc in supervisor_processes:
+                console.print(f"🔄 Deteniendo proceso PID {proc.pid}...", style="yellow")
+                proc.terminate()
+                proc.wait(timeout=5)
+            console.print("✅ Supervisión detenida", style="green")
+        else:
+            console.print("ℹ️ No se encontraron procesos de supervisión activos", style="blue")
+        
+        # Verificar si hay archivos de lock
+        lock_files = [
+            Path(project_path) / '.supervisor.lock',
+            Path(project_path) / 'logs' / 'supervisor.lock'
+        ]
+        
+        for lock_file in lock_files:
+            if lock_file.exists():
+                lock_file.unlink()
+                console.print(f"🗑️ Archivo de lock eliminado: {lock_file}", style="yellow")
+        
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True))
+@click.option('--fix', '-f', is_flag=True, help='Aplicar correcciones automáticas')
+def fix(project_path, fix):
+    """
+    🔧 Corregir problemas detectados en el proyecto
+    
+    Ejemplos:
+    pre-cursor supervisor fix /path/to/project
+    pre-cursor supervisor fix /path/to/project --fix
+    """
+    try:
+        from pre_cursor.cursor_supervisor import CursorSupervisor
+        
+        console.print(f"\n🔧 Corrigiendo problemas en: [bold blue]{project_path}[/bold blue]")
+        
+        supervisor = CursorSupervisor(project_path)
+        report = supervisor.check_project_health()
+        
+        if not report.issues_found:
+            console.print("✅ No se encontraron problemas que corregir", style="green")
+            return
+        
+        console.print(f"📊 Problemas encontrados: [bold yellow]{len(report.issues_found)}[/bold yellow]")
+        
+        # Mostrar problemas
+        for issue in report.issues_found:
+            severity_color = {
+                'low': 'green',
+                'medium': 'yellow', 
+                'high': 'red',
+                'critical': 'bold red'
+            }.get(issue.severity, 'white')
+            
+            console.print(f"  • [{severity_color}]{issue.severity.upper()}[/{severity_color}]: {issue.description}")
+            if issue.suggestion:
+                console.print(f"    💡 Sugerencia: {issue.suggestion}")
+        
+        if fix:
+            console.print("\n🔧 Aplicando correcciones automáticas...", style="yellow")
+            # Aquí se implementarían las correcciones automáticas
+            console.print("⚠️ Corrección automática no implementada aún", style="yellow")
+        else:
+            console.print("\n💡 Usa --fix para aplicar correcciones automáticas", style="blue")
+        
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True))
+def logs(project_path):
+    """
+    📋 Mostrar logs del supervisor
+    
+    Ejemplos:
+    pre-cursor supervisor logs /path/to/project
+    """
+    try:
+        from pathlib import Path
+        
+        log_files = [
+            Path(project_path) / 'logs' / 'supervisor.log',
+            Path(project_path) / 'logs' / 'cursor_supervisor.log',
+            Path(project_path) / '.supervisor.log'
+        ]
+        
+        console.print(f"\n📋 Logs del supervisor para: [bold blue]{project_path}[/bold blue]")
+        
+        log_found = False
+        for log_file in log_files:
+            if log_file.exists():
+                log_found = True
+                console.print(f"\n📄 Archivo: [bold green]{log_file}[/bold green]")
+                console.print("─" * 60)
+                
+                # Mostrar últimas 20 líneas
+                with open(log_file, 'r', encoding='utf-8') as f:
+                    lines = f.readlines()
+                    for line in lines[-20:]:
+                        console.print(line.rstrip())
+                
+                console.print("─" * 60)
+        
+        if not log_found:
+            console.print("ℹ️ No se encontraron archivos de log", style="blue")
+            console.print("💡 Los logs se crean cuando se ejecuta la supervisión", style="yellow")
+        
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
 @cli.command()
 @click.option('--examples', is_flag=True, help='Mostrar ejemplos de uso')
 def info(examples):
@@ -219,14 +483,15 @@ def info(examples):
     ℹ️ Información sobre Pre-Cursor
     """
     console.print(Panel.fit(
-        "[bold blue]🚀 Pre-Cursor v1.0.1[/bold blue]\n\n"
+        "[bold blue]🚀 Pre-Cursor v1.0.2[/bold blue]\n\n"
         "Generador de proyectos optimizado para agentes de IA\n"
         "Crea estructuras completas con metodología establecida\n\n"
         "[bold green]Características:[/bold green]\n"
         "• Soporte para múltiples lenguajes y frameworks\n"
         "• Plantillas profesionales y documentación completa\n"
         "• Integración con Git y herramientas de desarrollo\n"
-        "• Optimizado para trabajo con agentes de IA\n\n"
+        "• Optimizado para trabajo con agentes de IA\n"
+        "• Supervisión automática con Cursor Supervisor\n\n"
         "[bold yellow]Autor:[/bold yellow] Assiz Alcaraz Baxter\n"
         "[bold yellow]Licencia:[/bold yellow] MIT",
         title="Información del Proyecto"
@@ -238,6 +503,8 @@ def info(examples):
         console.print("• pre-cursor create mi-api --type 'Python Web App (FastAPI)'")
         console.print("• pre-cursor template --type 'Python Library'")
         console.print("• pre-cursor generate mi_config.json")
+        console.print("• pre-cursor supervisor start /path/to/project")
+        console.print("• pre-cursor supervisor status /path/to/project")
 
 def _validate_project_name(name):
     """Validar nombre del proyecto."""
@@ -621,6 +888,114 @@ def _show_config_preview(config_data):
         if isinstance(value, (dict, list)):
             value = str(value)[:50] + "..." if len(str(value)) > 50 else str(value)
         table.add_row(key, str(value))
+    
+    console.print(table)
+
+def _display_supervision_report(report):
+    """Mostrar reporte de supervisión."""
+    from datetime import datetime
+    
+    console.print(f"\n📊 Reporte de Supervisión - {report.timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
+    console.print("─" * 60)
+    
+    # Resumen
+    console.print(f"📈 Problemas encontrados: [bold yellow]{len(report.issues_found)}[/bold yellow]")
+    console.print(f"📁 Archivos creados: [bold green]{len(report.files_created)}[/bold green]")
+    console.print(f"✏️ Archivos modificados: [bold blue]{len(report.files_modified)}[/bold blue]")
+    console.print(f"🏗️ Cambios de estructura: [bold cyan]{len(report.structure_changes)}[/bold cyan]")
+    
+    # Problemas por severidad
+    if report.issues_found:
+        console.print("\n🚨 Problemas detectados:")
+        
+        severity_counts = {}
+        for issue in report.issues_found:
+            severity_counts[issue.severity] = severity_counts.get(issue.severity, 0) + 1
+        
+        for severity, count in severity_counts.items():
+            color = {
+                'low': 'green',
+                'medium': 'yellow',
+                'high': 'red',
+                'critical': 'bold red'
+            }.get(severity, 'white')
+            console.print(f"  • [{color}]{severity.upper()}[/{color}]: {count} problemas")
+        
+        # Mostrar problemas críticos y altos
+        critical_issues = [i for i in report.issues_found if i.severity in ['critical', 'high']]
+        if critical_issues:
+            console.print("\n⚠️ Problemas críticos/altos:")
+            for issue in critical_issues[:5]:  # Mostrar solo los primeros 5
+                console.print(f"  • {issue.description}")
+                if issue.suggestion:
+                    console.print(f"    💡 {issue.suggestion}")
+    
+    # Recomendaciones
+    if report.recommendations:
+        console.print("\n💡 Recomendaciones:")
+        for rec in report.recommendations[:3]:  # Mostrar solo las primeras 3
+            console.print(f"  • {rec}")
+
+def _check_active_supervision(project_path):
+    """Verificar si hay supervisión activa."""
+    try:
+        import psutil
+        from pathlib import Path
+        
+        # Buscar procesos de supervisor
+        supervisor_processes = []
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            try:
+                if proc.info['cmdline'] and any('cursor_supervisor' in arg for arg in proc.info['cmdline']):
+                    if project_path in ' '.join(proc.info['cmdline']):
+                        supervisor_processes.append(proc)
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+        
+        if supervisor_processes:
+            console.print(f"\n🔄 Supervisión activa: [bold green]SÍ[/bold green]")
+            for proc in supervisor_processes:
+                console.print(f"  • PID {proc.pid} - {proc.info['name']}")
+        else:
+            console.print(f"\n🔄 Supervisión activa: [bold red]NO[/bold red]")
+            console.print("💡 Usa 'pre-cursor supervisor start' para iniciar supervisión")
+        
+        # Verificar archivos de configuración
+        config_path = Path(project_path) / 'config' / 'cursor_supervisor.yaml'
+        if config_path.exists():
+            console.print(f"⚙️ Configuración: [bold green]Encontrada[/bold green] ({config_path})")
+        else:
+            console.print(f"⚙️ Configuración: [bold yellow]No encontrada[/bold yellow]")
+            console.print("💡 Usa 'pre-cursor supervisor config' para crear configuración")
+        
+    except Exception as e:
+        console.print(f"⚠️ Error verificando supervisión activa: {e}", style="yellow")
+
+def _display_supervisor_config(config_data):
+    """Mostrar configuración del supervisor."""
+    console.print("\n⚙️ Configuración actual del supervisor:")
+    
+    table = Table(show_header=True, header_style="bold blue")
+    table.add_column("Parámetro", style="cyan")
+    table.add_column("Valor", style="white")
+    
+    # Configuración del supervisor
+    supervisor_config = config_data.get('supervisor', {})
+    table.add_row("Intervalo de verificación", f"{supervisor_config.get('check_interval', 300)} segundos")
+    table.add_row("Corrección automática", str(supervisor_config.get('auto_fix', False)))
+    table.add_row("Nivel de logging", supervisor_config.get('log_level', 'INFO'))
+    table.add_row("Máximo de problemas", str(supervisor_config.get('max_issues', 10)))
+    
+    # Configuración de detección
+    detection_config = config_data.get('detection', {})
+    table.add_row("Verificar archivos fuera de lugar", str(detection_config.get('check_misplaced_files', True)))
+    table.add_row("Verificar duplicados", str(detection_config.get('check_duplicates', True)))
+    table.add_row("Verificar estructura", str(detection_config.get('check_structure', True)))
+    
+    # Configuración de notificaciones
+    notifications_config = config_data.get('notifications', {})
+    table.add_row("Notificaciones en consola", str(notifications_config.get('console', True)))
+    table.add_row("Logging a archivo", str(notifications_config.get('file_logging', True)))
     
     console.print(table)
 

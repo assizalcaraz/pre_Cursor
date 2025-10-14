@@ -294,5 +294,5 @@ MIT License - Ver [LICENSE](../LICENSE) para más detalles.
 ---
 
 **Desarrollado por**: Assiz Alcaraz Baxter  
-**Contacto**: assiz@pre-cursor.dev  
+**Contacto**:   
 **Repositorio**: https://github.com/assizalcaraz/pre_Cursor
