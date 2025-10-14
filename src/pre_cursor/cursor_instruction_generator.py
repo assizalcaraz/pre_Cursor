@@ -29,6 +29,13 @@ class CursorInstructionGenerator:
         self.methodology_path = Path(methodology_path) if methodology_path else None
         self.methodology = self._load_methodology()
         
+        # Usar estructura organizada de Cursor
+        self.cursor_dir = self.project_path / ".cursor"
+        self.logs_dir = self.cursor_dir / "logs"
+        self.logs_dir.mkdir(parents=True, exist_ok=True)
+        
+        self.instructions_log_path = self.logs_dir / "instructions.json"
+        
         # Configuración de instrucciones por tipo de problema
         self.instruction_templates = {
             "misplaced_file": self._create_misplaced_file_instruction,

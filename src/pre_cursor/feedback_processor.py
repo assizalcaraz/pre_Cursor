@@ -27,7 +27,13 @@ class FeedbackProcessor:
     def __init__(self, project_path: str):
         self.project_path = Path(project_path)
         self.bitacora_path = self.project_path / "BITACORA.md"
-        self.metrics_path = self.project_path / "CURSOR_METRICS.json"
+        
+        # Usar estructura organizada de Cursor
+        self.cursor_dir = self.project_path / ".cursor"
+        self.logs_dir = self.cursor_dir / "logs"
+        self.logs_dir.mkdir(parents=True, exist_ok=True)
+        
+        self.metrics_path = self.logs_dir / "metrics.json"
         self.feedback_log = []
         
         # Crear archivos si no existen

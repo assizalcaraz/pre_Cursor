@@ -47,6 +47,19 @@ $NOMBRE_PROYECTO/
 │   ├── CURSOR_GUIDE.md          # Este archivo (para IA)
 │   ├── roadmap_v1.md            # Plan de desarrollo
 │   └── METODOLOGIA_DESARROLLO.md # Metodología establecida
+├── .cursor/                     # Integración Cursor CLI
+│   ├── prompts/                 # Prompts generados
+│   │   ├── 2024-10-14/          # Organizados por fecha
+│   │   │   ├── move_test_files_080529.md
+│   │   │   └── reorganize_structure_080506.md
+│   │   └── latest.md            # Enlace al último prompt
+│   ├── logs/                    # Logs de ejecución
+│   │   ├── instructions.json    # Instrucciones generadas
+│   │   ├── executions.json      # Log de ejecuciones
+│   │   ├── feedback.json        # Log de feedback
+│   │   └── metrics.json         # Métricas de integración
+│   └── config/                  # Configuración específica
+│       └── cursor_supervisor.yaml
 └── examples/                    # Ejemplos de uso
 ```
 
@@ -55,8 +68,15 @@ $NOMBRE_PROYECTO/
 - **📁 src/**: Código fuente principal
 - **📁 tests/**: Pruebas unitarias y de integración
 - **📁 examples/**: Ejemplos de uso y demos
+- **📁 .cursor/**: Integración Cursor CLI (NO modificar manualmente)
 - **📄 README.md**: Documentación principal (en raíz)
 - **📄 CONTEXTO.md**: Contexto del proyecto (en raíz)
+
+### 5. **Integración Cursor CLI**
+- **📁 .cursor/prompts/**: Prompts generados automáticamente por el supervisor
+- **📁 .cursor/logs/**: Logs de ejecución y métricas de integración
+- **📁 .cursor/config/**: Configuración específica del supervisor
+- **📄 .cursor/prompts/latest.md**: Enlace al último prompt generado
 
 ---
 
@@ -84,6 +104,24 @@ python -m $MODULO_PRINCIPAL
 
 # Verificar sintaxis
 python -m py_compile src/$MODULO_PRINCIPAL.py
+```
+
+### Integración Cursor CLI
+```bash
+# Ver último prompt generado
+cat .cursor/prompts/latest.md
+
+# Ver logs de ejecución
+cat .cursor/logs/executions.json
+
+# Ver métricas de integración
+cat .cursor/logs/metrics.json
+
+# Listar prompts por fecha
+ls -la .cursor/prompts/2024-10-14/
+
+# Ver configuración del supervisor
+cat .cursor/config/cursor_supervisor.yaml
 ```
 
 ---

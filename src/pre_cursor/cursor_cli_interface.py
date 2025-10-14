@@ -33,8 +33,27 @@ class CursorCLIInterface:
         self.cursor_available = self._check_cursor_availability()
         self.execution_log = []
         
+        # Estructura organizada para archivos de Cursor
+        self.cursor_dir = self.project_path / ".cursor"
+        self.prompts_dir = self.cursor_dir / "prompts"
+        self.logs_dir = self.cursor_dir / "logs"
+        self.config_dir = self.cursor_dir / "config"
+        
+        # Crear directorios
+        for directory in [self.cursor_dir, self.prompts_dir, self.logs_dir, self.config_dir]:
+            directory.mkdir(parents=True, exist_ok=True)
+        
+        # Paths de archivos de log
+        self.execution_log_path = self.logs_dir / "executions.json"
+        self.instructions_log_path = self.logs_dir / "instructions.json"
+        self.feedback_log_path = self.logs_dir / "feedback.json"
+        self.metrics_log_path = self.logs_dir / "metrics.json"
+        
         if not self.cursor_available:
             logger.warning("Cursor CLI no está disponible - modo simulación activado")
+        
+        logger.info(f"CursorCLIInterface inicializado para {project_path}")
+        logger.info(f"Directorios Cursor: {self.cursor_dir}")
     
     def _find_cursor_executable(self) -> Optional[str]:
         """Buscar ejecutable de Cursor en el sistema"""
@@ -193,8 +212,13 @@ Mantén la funcionalidad existente y asegúrate de que los cambios sean consiste
     def _run_cursor_command(self, prompt: str, instruction: CursorInstruction) -> ExecutionResult:
         """Ejecutar comando en Cursor CLI"""
         try:
-            # Crear archivo temporal con el prompt
-            prompt_file = self.project_path / f".cursor_prompt_{instruction.timestamp.strftime('%Y%m%d_%H%M%S')}.md"
+            # Crear directorio por fecha para organizar prompts
+            date_dir = self.prompts_dir / instruction.timestamp.strftime('%Y-%m-%d')
+            date_dir.mkdir(exist_ok=True)
+            
+            # Crear archivo de prompt organizado
+            prompt_filename = f"{instruction.action}_{instruction.timestamp.strftime('%H%M%S')}.md"
+            prompt_file = date_dir / prompt_filename
             
             with open(prompt_file, 'w', encoding='utf-8') as f:
                 f.write(prompt)
@@ -219,6 +243,16 @@ Mantén la funcionalidad existente y asegúrate de que los cambios sean consiste
             
             # Mantener archivo de prompt para referencia (no eliminar)
             logger.info(f"Archivo de prompt creado: {prompt_file}")
+            
+            # Crear enlace simbólico al último prompt
+            latest_link = self.prompts_dir / "latest.md"
+            try:
+                if latest_link.exists():
+                    latest_link.unlink()
+                latest_link.symlink_to(prompt_file.relative_to(self.prompts_dir))
+                logger.debug(f"Enlace simbólico creado: {latest_link} -> {prompt_file}")
+            except Exception as e:
+                logger.warning(f"No se pudo crear enlace simbólico: {e}")
             
             # Procesar resultado
             if result.returncode == 0:
