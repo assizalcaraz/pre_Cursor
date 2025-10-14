@@ -23,6 +23,11 @@ from dataclasses import dataclass
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+# Importar módulos de integración bidireccional
+from .cursor_instruction_generator import CursorInstructionGenerator
+from .cursor_cli_interface import CursorCLIInterface
+from .feedback_processor import FeedbackProcessor
+
 # Configurar logging
 logging.basicConfig(
     level=logging.INFO,
@@ -175,9 +180,11 @@ class DuplicateDetector:
 class CursorSupervisor:
     """Supervisor principal para Cursor IDE"""
     
-    def __init__(self, project_path: str, check_interval: int = 300):
+    def __init__(self, project_path: str, check_interval: int = 300, 
+                 enable_bidirectional: bool = False, methodology_path: str = None):
         self.project_path = Path(project_path)
         self.check_interval = check_interval
+        self.enable_bidirectional = enable_bidirectional
         self.structure_monitor = ProjectStructureMonitor(project_path)
         self.duplicate_detector = DuplicateDetector(project_path)
         self.bitacora_path = self.project_path / 'BITACORA.md'
@@ -193,6 +200,15 @@ class CursorSupervisor:
             '%(asctime)s - %(levelname)s - %(message)s'
         ))
         self.logger.addHandler(handler)
+        
+        # Inicializar componentes de integración bidireccional
+        if self.enable_bidirectional:
+            self.instruction_generator = CursorInstructionGenerator(
+                str(project_path), methodology_path
+            )
+            self.cursor_interface = CursorCLIInterface(str(project_path))
+            self.feedback_processor = FeedbackProcessor(str(project_path))
+            self.logger.info("Integración bidireccional habilitada")
     
     def start_supervision(self):
         """Iniciar supervisión continua"""
@@ -204,11 +220,108 @@ class CursorSupervisor:
                 self.update_bitacora(report)
                 self.logger.info(f"Supervisión completada. {len(report.issues_found)} problemas encontrados")
                 
+                # Aplicar correcciones automáticas si está habilitado
+                if self.enable_bidirectional and report.issues_found:
+                    self._apply_automatic_corrections(report)
+                
                 time.sleep(self.check_interval)
         except KeyboardInterrupt:
             self.logger.info("Supervisión detenida por el usuario")
         except Exception as e:
             self.logger.error(f"Error en supervisión: {e}")
+    
+    def start_supervision_with_cursor(self):
+        """Iniciar supervisión con integración bidireccional de Cursor CLI"""
+        if not self.enable_bidirectional:
+            self.logger.warning("Integración bidireccional no habilitada - iniciando supervisión normal")
+            return self.start_supervision()
+        
+        self.logger.info("Iniciando supervisión con integración bidireccional de Cursor CLI")
+        
+        try:
+            while True:
+                report = self.check_project_health()
+                self.update_bitacora(report)
+                
+                if report.issues_found:
+                    self.logger.info(f"Procesando {len(report.issues_found)} problemas con Cursor CLI")
+                    self._apply_automatic_corrections(report)
+                else:
+                    self.logger.info("No se encontraron problemas - proyecto saludable")
+                
+                time.sleep(self.check_interval)
+        except KeyboardInterrupt:
+            self.logger.info("Supervisión con Cursor CLI detenida por el usuario")
+        except Exception as e:
+            self.logger.error(f"Error en supervisión con Cursor CLI: {e}")
+    
+    def _apply_automatic_corrections(self, report: SupervisionReport):
+        """Aplicar correcciones automáticas usando Cursor CLI"""
+        try:
+            # Generar instrucciones basadas en el reporte
+            instructions = self.instruction_generator.generate_instructions(report)
+            
+            if not instructions:
+                self.logger.info("No se generaron instrucciones para los problemas detectados")
+                return
+            
+            self.logger.info(f"Generadas {len(instructions)} instrucciones para Cursor CLI")
+            
+            # Guardar instrucciones para referencia
+            instructions_file = self.instruction_generator.save_instructions(instructions)
+            self.logger.info(f"Instrucciones guardadas en: {instructions_file}")
+            
+            # Ejecutar instrucciones en lote
+            results = self.cursor_interface.execute_instructions_batch(instructions)
+            
+            # Procesar resultados
+            for instruction, result in zip(instructions, results):
+                self.feedback_processor.process_result(result, instruction)
+            
+            # Generar resumen
+            summary = self.cursor_interface.get_execution_summary()
+            self.logger.info(f"Correcciones aplicadas: {summary['successful_executions']}/{summary['total_executions']} exitosas")
+            
+            # Guardar logs
+            self.cursor_interface.save_execution_log()
+            self.feedback_processor.save_feedback_log()
+            
+        except Exception as e:
+            self.logger.error(f"Error aplicando correcciones automáticas: {e}")
+    
+    def apply_single_correction(self, issue: ProjectIssue) -> bool:
+        """Aplicar corrección individual para un problema específico"""
+        if not self.enable_bidirectional:
+            self.logger.warning("Integración bidireccional no habilitada")
+            return False
+        
+        try:
+            # Crear reporte temporal con un solo problema
+            temp_report = SupervisionReport(
+                timestamp=datetime.now(),
+                issues_found=[issue],
+                recommendations=[]
+            )
+            
+            # Generar instrucción
+            instructions = self.instruction_generator.generate_instructions(temp_report)
+            
+            if not instructions:
+                self.logger.warning("No se pudo generar instrucción para el problema")
+                return False
+            
+            # Ejecutar instrucción
+            result = self.cursor_interface.execute_instruction(instructions[0])
+            
+            # Procesar resultado
+            self.feedback_processor.process_result(result, instructions[0])
+            
+            self.logger.info(f"Corrección individual aplicada: {result}")
+            return result.success
+            
+        except Exception as e:
+            self.logger.error(f"Error aplicando corrección individual: {e}")
+            return False
     
     def check_project_health(self) -> SupervisionReport:
         """Verificar salud general del proyecto"""

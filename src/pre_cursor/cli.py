@@ -26,6 +26,12 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from init_project import ProjectGenerator
 
+# Importar módulos de integración bidireccional
+from .cursor_supervisor import CursorSupervisor
+from .cursor_instruction_generator import CursorInstructionGenerator
+from .cursor_cli_interface import CursorCLIInterface
+from .feedback_processor import FeedbackProcessor
+
 console = Console()
 
 @click.group()
@@ -537,6 +543,246 @@ def logs(project_path, path):
     except Exception as e:
         console.print(f"❌ Error: {e}", style="red")
 
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--interval', '-i', type=int, default=300, help='Intervalo de supervisión en segundos')
+@click.option('--daemon', '-d', is_flag=True, help='Ejecutar como daemon en background')
+@click.option('--methodology', '-m', type=click.Path(exists=True), help='Archivo de metodología personalizada')
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def start_bidirectional(project_path, interval, daemon, methodology, path):
+    """
+    🔄 Iniciar supervisión con integración bidireccional de Cursor CLI
+    
+    Aplica correcciones automáticas usando Cursor CLI cuando se detectan problemas.
+    
+    Ejemplos:
+    pre-cursor supervisor start-bidirectional /path/to/project
+    pre-cursor supervisor start-bidirectional /path/to/project --interval 600
+    pre-cursor supervisor start-bidirectional /path/to/project --daemon
+    pre-cursor supervisor start-bidirectional -p --methodology custom.yaml
+    """
+    try:
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
+        
+        console.print(f"\n🔄 Iniciando supervisión bidireccional de: [bold blue]{project_path}[/bold blue]")
+        console.print(f"⏱️ Intervalo: [bold green]{interval}[/bold green] segundos")
+        console.print("🤖 Integración Cursor CLI: [bold green]Habilitada[/bold green]")
+        
+        if methodology:
+            console.print(f"📋 Metodología personalizada: [bold blue]{methodology}[/bold blue]")
+        
+        supervisor = CursorSupervisor(
+            project_path, 
+            check_interval=interval,
+            enable_bidirectional=True,
+            methodology_path=methodology
+        )
+        
+        if daemon:
+            console.print("🔄 Ejecutando como daemon con correcciones automáticas...", style="yellow")
+            supervisor.start_supervision_with_cursor()
+        else:
+            console.print("🔄 Ejecutando verificación única con correcciones...", style="yellow")
+            report = supervisor.check_project_health()
+            _display_supervision_report(report)
+            
+            if report.issues_found:
+                console.print("\n🤖 Aplicando correcciones automáticas...", style="yellow")
+                supervisor._apply_automatic_corrections(report)
+                console.print("✅ Correcciones aplicadas", style="green")
+            
+    except ImportError as e:
+        console.print(f"❌ Error: Módulo no encontrado: {e}", style="red")
+        console.print("💡 Instala las dependencias: pip install watchdog psutil", style="yellow")
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def instructions(project_path, path):
+    """
+    📋 Generar instrucciones para Cursor CLI basadas en problemas detectados
+    
+    Ejemplos:
+    pre-cursor supervisor instructions /path/to/project
+    pre-cursor supervisor instructions -p  # Usar directorio actual
+    """
+    try:
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
+        
+        console.print(f"\n📋 Generando instrucciones para: [bold blue]{project_path}[/bold blue]")
+        
+        # Crear supervisor con integración bidireccional
+        supervisor = CursorSupervisor(project_path, enable_bidirectional=True)
+        
+        # Verificar salud del proyecto
+        report = supervisor.check_project_health()
+        _display_supervision_report(report)
+        
+        if report.issues_found:
+            # Generar instrucciones
+            instructions = supervisor.instruction_generator.generate_instructions(report)
+            
+            if instructions:
+                console.print(f"\n📝 Generadas {len(instructions)} instrucciones para Cursor CLI")
+                
+                # Guardar instrucciones
+                instructions_file = supervisor.instruction_generator.save_instructions(instructions)
+                console.print(f"💾 Instrucciones guardadas en: [bold green]{instructions_file}[/bold green]")
+                
+                # Mostrar resumen de instrucciones
+                _display_instructions_summary(instructions)
+            else:
+                console.print("ℹ️ No se generaron instrucciones para los problemas detectados", style="blue")
+        else:
+            console.print("✅ No se encontraron problemas - no se generaron instrucciones", style="green")
+            
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def apply(project_path, path):
+    """
+    ⚡ Aplicar correcciones automáticas usando Cursor CLI
+    
+    Ejemplos:
+    pre-cursor supervisor apply /path/to/project
+    pre-cursor supervisor apply -p  # Usar directorio actual
+    """
+    try:
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
+        
+        console.print(f"\n⚡ Aplicando correcciones automáticas en: [bold blue]{project_path}[/bold blue]")
+        
+        # Crear supervisor con integración bidireccional
+        supervisor = CursorSupervisor(project_path, enable_bidirectional=True)
+        
+        # Verificar salud del proyecto
+        report = supervisor.check_project_health()
+        
+        if report.issues_found:
+            console.print(f"🔍 Detectados {len(report.issues_found)} problemas")
+            
+            # Aplicar correcciones automáticas
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console,
+            ) as progress:
+                task = progress.add_task("Aplicando correcciones...", total=None)
+                
+                supervisor._apply_automatic_corrections(report)
+                
+                progress.update(task, description="✅ Correcciones aplicadas")
+            
+            # Mostrar resumen
+            summary = supervisor.cursor_interface.get_execution_summary()
+            console.print(f"\n📊 Resumen de ejecución:")
+            console.print(f"  • Total de ejecuciones: {summary['total_executions']}")
+            console.print(f"  • Exitosas: {summary['successful_executions']}")
+            console.print(f"  • Fallidas: {summary['failed_executions']}")
+            console.print(f"  • Tasa de éxito: {summary['success_rate']:.1f}%")
+            
+        else:
+            console.print("✅ No se encontraron problemas - no se aplicaron correcciones", style="green")
+            
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def metrics(project_path, path):
+    """
+    📊 Mostrar métricas de integración bidireccional
+    
+    Ejemplos:
+    pre-cursor supervisor metrics /path/to/project
+    pre-cursor supervisor metrics -p  # Usar directorio actual
+    """
+    try:
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
+        
+        console.print(f"\n📊 Métricas de integración bidireccional para: [bold blue]{project_path}[/bold blue]")
+        
+        # Crear feedback processor
+        feedback_processor = FeedbackProcessor(project_path)
+        
+        # Cargar métricas
+        metrics_path = Path(project_path) / "CURSOR_METRICS.json"
+        if metrics_path.exists():
+            with open(metrics_path, 'r', encoding='utf-8') as f:
+                metrics = json.load(f)
+            
+            # Mostrar métricas generales
+            table = Table(title="Métricas Generales")
+            table.add_column("Métrica", style="cyan")
+            table.add_column("Valor", style="green")
+            
+            table.add_row("Total de ejecuciones", str(metrics.get('total_executions', 0)))
+            table.add_row("Ejecuciones exitosas", str(metrics.get('successful_executions', 0)))
+            table.add_row("Ejecuciones fallidas", str(metrics.get('failed_executions', 0)))
+            table.add_row("Tasa de éxito", f"{metrics.get('success_rate', 0):.1f}%")
+            table.add_row("Tiempo total", f"{metrics.get('total_execution_time', 0):.2f}s")
+            table.add_row("Tiempo promedio", f"{metrics.get('average_execution_time', 0):.2f}s")
+            
+            console.print(table)
+            
+            # Mostrar métricas por acción
+            if metrics.get('actions'):
+                console.print("\n📈 Métricas por Acción:")
+                action_table = Table()
+                action_table.add_column("Acción", style="cyan")
+                action_table.add_column("Total", style="blue")
+                action_table.add_column("Exitosas", style="green")
+                action_table.add_column("Fallidas", style="red")
+                action_table.add_column("Tasa de éxito", style="yellow")
+                
+                for action, stats in metrics['actions'].items():
+                    success_rate = (stats['successful'] / stats['total'] * 100) if stats['total'] > 0 else 0
+                    action_table.add_row(
+                        action,
+                        str(stats['total']),
+                        str(stats['successful']),
+                        str(stats['failed']),
+                        f"{success_rate:.1f}%"
+                    )
+                
+                console.print(action_table)
+            
+        else:
+            console.print("ℹ️ No se encontraron métricas - ejecuta correcciones automáticas primero", style="blue")
+            
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
 @cli.command()
 @click.option('--examples', is_flag=True, help='Mostrar ejemplos de uso')
 def info(examples):
@@ -998,6 +1244,35 @@ def _display_supervision_report(report):
         console.print("\n💡 Recomendaciones:")
         for rec in report.recommendations[:3]:  # Mostrar solo las primeras 3
             console.print(f"  • {rec}")
+
+def _display_instructions_summary(instructions):
+    """Mostrar resumen de instrucciones generadas."""
+    from rich.table import Table
+    
+    console.print("\n📋 Resumen de Instrucciones Generadas:")
+    
+    table = Table()
+    table.add_column("Acción", style="cyan")
+    table.add_column("Archivo", style="blue")
+    table.add_column("Prioridad", style="yellow")
+    table.add_column("Metodología", style="green")
+    
+    for instruction in instructions:
+        priority_color = {
+            'critical': 'bold red',
+            'high': 'red',
+            'medium': 'yellow',
+            'low': 'green'
+        }.get(instruction.priority, 'white')
+        
+        table.add_row(
+            instruction.action,
+            instruction.target,
+            f"[{priority_color}]{instruction.priority}[/{priority_color}]",
+            instruction.methodology_reference
+        )
+    
+    console.print(table)
 
 def _check_active_supervision(project_path):
     """Verificar si hay supervisión activa."""
