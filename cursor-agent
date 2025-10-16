@@ -1,0 +1,83 @@
+#!/bin/bash
+# Cursor Agent CLI Wrapper
+# Este script actúa como cursor-agent para el sistema Pre-Cursor
+
+# Función para mostrar ayuda
+show_help() {
+    echo "Cursor Agent CLI Wrapper"
+    echo "Usage: cursor-agent [OPTIONS] COMMAND [ARGS]..."
+    echo ""
+    echo "Commands:"
+    echo "  analyze_test    Analyze test files using LLM"
+    echo "  fix_code        Fix code issues using LLM"
+    echo "  refactor        Refactor code using LLM"
+    echo "  --version       Show version"
+    echo "  --help          Show this help"
+    echo ""
+    echo "This wrapper uses agent-cli under the hood for AI-powered operations."
+}
+
+# Función para analizar tests
+analyze_test() {
+    local file_path="$1"
+    if [ -z "$file_path" ]; then
+        echo "Error: File path required for analyze_test"
+        exit 1
+    fi
+    
+    echo "Analyzing test file: $file_path"
+    # Usar agent-cli para analizar el archivo
+    agent-cli chat "Please analyze this test file and provide feedback on its quality, completeness, and potential improvements: $(cat "$file_path")"
+}
+
+# Función para arreglar código
+fix_code() {
+    local file_path="$1"
+    if [ -z "$file_path" ]; then
+        echo "Error: File path required for fix_code"
+        exit 1
+    fi
+    
+    echo "Fixing code in: $file_path"
+    # Usar agent-cli para arreglar el código
+    agent-cli chat "Please review and fix any issues in this code file: $(cat "$file_path")"
+}
+
+# Función para refactorizar
+refactor() {
+    local file_path="$1"
+    if [ -z "$file_path" ]; then
+        echo "Error: File path required for refactor"
+        exit 1
+    fi
+    
+    echo "Refactoring: $file_path"
+    # Usar agent-cli para refactorizar
+    agent-cli chat "Please refactor this code to improve its structure and maintainability: $(cat "$file_path")"
+}
+
+# Procesar argumentos
+case "$1" in
+    --version)
+        echo "cursor-agent 1.0.0 (wrapper for agent-cli)"
+        exit 0
+        ;;
+    --help)
+        show_help
+        exit 0
+        ;;
+    analyze_test)
+        analyze_test "$2"
+        ;;
+    fix_code)
+        fix_code "$2"
+        ;;
+    refactor)
+        refactor "$2"
+        ;;
+    *)
+        echo "Unknown command: $1"
+        show_help
+        exit 1
+        ;;
+esac

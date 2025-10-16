@@ -1,8 +1,8 @@
 # Metodología de Desarrollo con Cursor - Mejores Prácticas
 
 **Fecha**: 2024-12-19  
-**Proyecto**: openFramework_MCP - Middleware MCP para openFrameworks  
-**Objetivo**: Documentar metodología de desarrollo establecida para replicar en otros proyectos
+**Proyecto**: Metodología Universal de Desarrollo  
+**Objetivo**: Plantilla de metodología de desarrollo establecida para aplicar a cualquier proyecto
 
 ---
 
@@ -43,7 +43,7 @@ git add . && git commit -m "WIP: Descripción del cambio"
 
 ## 📋 Resumen Ejecutivo
 
-Este documento establece las mejores prácticas de desarrollo identificadas durante la creación del proyecto TD_MCP, incluyendo gestión de bitácora, sistema de testing, documentación de tutoriales y organización de código. Estas prácticas han demostrado ser efectivas para mantener proyectos organizados, documentados y mantenibles.
+Este documento establece las mejores prácticas de desarrollo universales que pueden aplicarse a cualquier proyecto, incluyendo gestión de bitácora, sistema de testing, documentación de tutoriales y organización de código. Estas prácticas han demostrado ser efectivas para mantener proyectos organizados, documentados y mantenibles independientemente del tipo de proyecto.
 
 ---
 
@@ -440,7 +440,7 @@ git commit -m "FEAT: Descripción de nueva funcionalidad"
 
 ## 🔗 Referencias y Recursos
 
-### Archivos de Referencia del Proyecto TD_MCP
+### Archivos de Referencia de Ejemplo
 
 - `BITACORA.md`: Ejemplo completo de gestión de bitácora
 - `tests/README.md`: Instrucciones detalladas de testing

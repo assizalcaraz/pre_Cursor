@@ -48,8 +48,72 @@ def cli(ctx, verbose, config):
     Soporta Python, FastAPI, TD_MCP, C++, Node.js y más.
     """
     ctx.ensure_object(dict)
-    ctx.obj['verbose'] = verbose
-    ctx.obj['config'] = config
+
+@cli.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+@click.option('--daemon', '-d', is_flag=True, help='Ejecutar en modo daemon (segundo plano)')
+@click.option('--interval', '-i', type=int, default=300, help='Intervalo de supervisión en segundos (default: 300)')
+@click.option('--auto-fix', '-f', is_flag=True, help='Aplicar correcciones automáticas')
+@click.option('--test-supervisor', '-t', is_flag=True, help='Incluir supervisión especializada de tests')
+@click.option('--llm-validation', '-l', is_flag=True, help='Usar LLM para validación de tests')
+def monitor(project_path, path, daemon, interval, auto_fix, test_supervisor, llm_validation):
+    """
+    🔄 MONITOR UNIFICADO - Supervisión automática completa
+    
+    Comando unificado que inicia la supervisión automática del proyecto
+    con todas las funcionalidades integradas y priorizando Cursor Agent CLI.
+    
+    Ejemplos:
+    pre-cursor monitor -p                    # Supervisión básica del directorio actual
+    pre-cursor monitor -p -d -i 180         # Daemon cada 3 minutos
+    pre-cursor monitor -p -d -f -t -l       # Supervisión completa con correcciones automáticas
+    """
+    try:
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
+        
+        console.print(f"\n🔄 Iniciando supervisión unificada de: [bold blue]{project_path}[/bold blue]")
+        
+        # Configurar opciones
+        options = {
+            'daemon': daemon,
+            'interval': interval,
+            'auto_fix': auto_fix,
+            'test_supervisor': test_supervisor,
+            'llm_validation': llm_validation
+        }
+        
+        # Mostrar configuración
+        console.print(f"\n⚙️ Configuración:")
+        console.print(f"  🤖 Modo daemon: {'Sí' if daemon else 'No'}")
+        console.print(f"  ⏱️ Intervalo: {interval} segundos")
+        console.print(f"  🔧 Correcciones automáticas: {'Sí' if auto_fix else 'No'}")
+        console.print(f"  🧪 Test Supervisor: {'Sí' if test_supervisor else 'No'}")
+        console.print(f"  🤖 Validación LLM: {'Sí' if llm_validation else 'No'}")
+        
+        # Inicializar supervisor unificado
+        from .unified_supervisor import UnifiedSupervisor
+        
+        supervisor = UnifiedSupervisor(
+            project_path=project_path,
+            **options
+        )
+        
+        if daemon:
+            console.print(f"\n🚀 Iniciando daemon en segundo plano...")
+            supervisor.start_daemon()
+        else:
+            console.print(f"\n🔄 Iniciando supervisión interactiva...")
+            supervisor.start_interactive()
+            
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
     
     if verbose:
         console.print("🔧 Modo verbose activado", style="blue")
@@ -222,11 +286,54 @@ def list_types():
 @cli.group()
 def supervisor():
     """
-    🤖 Gestión del Cursor Supervisor
+    🤖 Gestión del Cursor Supervisor (COMANDOS AVANZADOS)
     
-    Comandos para gestionar la supervisión automática de proyectos.
+    Comandos especializados para gestión avanzada del supervisor.
+    Para uso básico, usar: pre-cursor monitor -p
     """
     pass
+
+@supervisor.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def status(project_path, path):
+    """
+    📊 Estado del Supervisor Unificado
+    
+    Muestra el estado actual del supervisor y sus componentes.
+    """
+    try:
+        # Determinar path del proyecto
+        if path:
+            project_path = os.getcwd()
+            console.print(f"📍 Usando directorio actual: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p para directorio actual", style="red")
+            return
+        
+        from .unified_supervisor import UnifiedSupervisor
+        
+        # Crear supervisor temporal para obtener estado
+        supervisor = UnifiedSupervisor(project_path)
+        status_info = supervisor.get_status()
+        
+        # Mostrar estado
+        console.print(f"\n📊 Estado del Supervisor Unificado:")
+        console.print(f"  📁 Proyecto: [bold blue]{status_info['project_path']}[/bold blue]")
+        console.print(f"  🤖 Cursor Agent CLI: {'✅ Disponible' if status_info['cursor_agent_available'] else '❌ No disponible'}")
+        console.print(f"  🔧 Correcciones automáticas: {'✅ Habilitado' if status_info['auto_fix_enabled'] else '❌ Deshabilitado'}")
+        console.print(f"  🧪 Test Supervisor: {'✅ Habilitado' if status_info['test_supervisor_enabled'] else '❌ Deshabilitado'}")
+        console.print(f"  🤖 Validación LLM: {'✅ Habilitado' if status_info['llm_validation_enabled'] else '❌ Deshabilitado'}")
+        
+        console.print(f"\n🔧 Componentes:")
+        for component, initialized in status_info['components_initialized'].items():
+            status_icon = "✅" if initialized else "❌"
+            console.print(f"  {status_icon} {component}")
+        
+        console.print(f"\n💡 Para iniciar supervisión: [bold green]pre-cursor monitor -p[/bold green]")
+        
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
 
 @supervisor.command()
 @click.argument('project_path', type=click.Path(exists=True), required=False)

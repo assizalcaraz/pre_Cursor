@@ -45,58 +45,40 @@ python3 init_project.py MiNuevoProyecto
 python3 init_project.py --config mi_config.json
 ```
 
-## ✨ Novedades v1.1.0
+## ✨ Características Principales
 
-### 🎯 Correcciones Críticas
-- **✅ Sistema de plantillas completamente funcional** - Proyectos generados son 100% funcionales
-- **✅ Procesamiento híbrido de placeholders** - Soporte para `$VARIABLE` y `{{VARIABLE}}`
-- **✅ Dependencias reales** - Requirements.txt con dependencias reales en lugar de placeholders
-- **✅ Código Python funcional** - Sin placeholders sin procesar en archivos generados
-- **✅ Sin bucles infinitos** - Tests no interactivos funcionan correctamente
-
-### 🔧 Mejoras Técnicas
-- 50+ variables por defecto añadidas
-- Sistema de detección y reemplazo mejorado
-- Logging detallado del procesamiento
-- Optimización de espacio en disco (~3GB liberados)
+### 🎯 Generación Automática de Proyectos
+- **Sistema de plantillas** completamente funcional con procesamiento híbrido de placeholders
+- **11 tipos de proyecto** soportados (Python, C++, Node.js, TD_MCP, etc.)
+- **Dependencias reales** y código Python funcional sin placeholders
+- **Configuración flexible** con soporte para JSON y YAML
 
 ### 🤖 Supervisor Automático de Cursor
-- **Detección automática** de archivos fuera de lugar
-- **Identificación de duplicados** (archivos y funciones)
-- **Verificación de estructura** del proyecto
-- **Actualización automática** de bitácora
-- **Corrección automática** de problemas simples
+- **Detección automática** de problemas en la estructura del proyecto
+- **Corrección automática** de archivos fuera de lugar y duplicados
 - **Integración con Cursor IDE** para supervisión continua
-- **Gestión CLI completa** con comandos dedicados
-- **Configuración por proyecto** flexible y personalizable
+- **Validación con LLM** para tests y documentación
+- **Sistema de triggers** para activación externa y monitoreo automático
 
-### 🧪 Test Supervisor Especializado (NUEVO)
-- **Validación con LLM** usando Cursor Agent CLI
-- **Detección de tests falsos/vacíos** automáticamente
-- **Análisis de calidad** con puntuación numérica (1-10)
-- **Limpieza automática** de tests inválidos
-- **Unificación inteligente** de tests válidos en un solo archivo
-- **Sincronización con documentación** (README, BITACORA, etc.)
-- **Monitoreo continuo** en modo daemon
-- **Correcciones automáticas** sin intervención del usuario
+## 🎯 ¿Qué hace Pre-Cursor?
 
-### 🔄 Integración Bidireccional (NUEVO)
-- **Sistema de triggers** para activación externa
-- **Daemon en segundo plano** sin abrir IDE constantemente
-- **AutoExecutor** para correcciones directas del sistema de archivos
-- **Cursor Agent CLI** para ejecución de prompts inteligentes
-- **Feedback loop** completo entre detección y corrección
-- **Logs centralizados** en `.cursor/logs/`
-```
+Pre-Cursor es un **generador de proyectos automatizado** que:
 
-### Uso Básico
+1. **Crea proyectos completos** siguiendo una metodología establecida
+2. **Genera documentación automática** (README, BITACORA, tutoriales)
+3. **Configura estructura de directorios** optimizada para desarrollo
+4. **Supervisa y corrige** problemas automáticamente con Cursor IDE
+5. **Valida tests y documentación** usando inteligencia artificial
+
+### ¿Cómo funciona?
+
 ```python
 from init_project import ProjectGenerator
 
 # Crear generador
 generator = ProjectGenerator()
 
-# Generar proyecto
+# Generar proyecto completo
 generator.generate_project("MiProyecto")
 ```
 
@@ -298,10 +280,11 @@ python3 init_project.py ProyectoTest
 
 ## 📚 Documentación
 
-- [Metodología de Desarrollo](METODOLOGIA_DESARROLLO.md)
+- [Metodología de Desarrollo](docs/METODOLOGIA_DESARROLLO.md)
 - [Bitácora del Proyecto](BITACORA.md)
 - [Instrucciones de Testing](tests/README.md)
 - [Ejemplos de Configuración](examples/)
+- [Guías de Usuario](docs/guides/)
 
 ---
 
@@ -321,22 +304,30 @@ python3 init_project.py ProyectoTest
 
 ---
 
-## 🚀 Uso para Agentes de IA
+## 🚀 Metodología de Desarrollo Universal
 
-### Instrucción Simple para Agentes
+Pre-Cursor implementa una **metodología de desarrollo estandarizada** que puede aplicarse a cualquier proyecto:
+
+### 📋 Principios Fundamentales
+1. **Documentación Continua**: BITACORA.md actualizada en tiempo real
+2. **Testing Proactivo**: Evaluar tests existentes antes de crear nuevos
+3. **Organización Modular**: Estructura clara de directorios
+4. **Tutoriales Estructurados**: Formato consistente con fecha, lección y resumen
+
+### 🎯 Beneficios para Desarrolladores
+- **Consistencia Garantizada**: Cada proyecto sigue la misma metodología
+- **Punto de Entrada Único**: Una sola instrucción para crear proyecto completo
+- **Reducción de Ambigüedad**: Información estructurada y predecible
+- **Contexto Automático**: Documentación generada automáticamente
+- **Escalabilidad**: Estructura preparada para crecimiento
+
+### 🤖 Uso para Agentes de IA
 ```
 "Clona el repositorio pre_cursor y ejecuta 
 python3 init_project.py para crear un nuevo proyecto llamado 
 'MiNuevaApp' con la descripción 'Una aplicación para 
 visualización de datos'."
 ```
-
-### Beneficios para Agentes
-- **Punto de Entrada Único**: Una sola instrucción para crear proyecto completo
-- **Reducción de Ambigüedad**: Información estructurada y predecible
-- **Consistencia Garantizada**: Cada proyecto sigue la metodología al 100%
-- **Contexto Automático**: Archivo CONTEXTO.md generado automáticamente
-- **Soporte TD_MCP**: Generación específica para proyectos TouchDesigner MCP
 
 ---
 
@@ -350,10 +341,10 @@ visualización de datos'."
 - **`docs/METODOLOGIA_DESARROLLO.md`** - Metodología establecida
 
 ### Guías Disponibles
-- **`QUICKSTART.md`** - Inicio rápido
-- **`GUIA_PASO_A_PASO.md`** - Guía detallada
-- **`GUIA_SUPER_SIMPLE.md`** - Para principiantes
-- **`README_PRINCIPIANTES.md`** - Introducción básica
+- **`docs/guides/QUICKSTART.md`** - Inicio rápido
+- **`docs/guides/GUIA_PASO_A_PASO.md`** - Guía detallada
+- **`docs/guides/GUIA_SUPER_SIMPLE.md`** - Para principiantes
+- **`docs/guides/README_PRINCIPIANTES.md`** - Introducción básica
 
 ### Archivos de Configuración
 - **`config/`** - Archivos de configuración del proyecto
