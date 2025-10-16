@@ -57,8 +57,11 @@ python3 init_project.py --config mi_config.json
 - **Detección automática** de problemas en la estructura del proyecto
 - **Corrección automática** de archivos fuera de lugar y duplicados
 - **Integración con Cursor IDE** para supervisión continua
-- **Validación con LLM** para tests y documentación
+- **Test Supervisor especializado** con validación LLM para tests
 - **Sistema de triggers** para activación externa y monitoreo automático
+- **AutoExecutor** para correcciones directas del sistema de archivos
+- **Daemon en segundo plano** sin abrir IDE constantemente
+- **Feedback loop completo** entre detección y corrección
 
 ## 🎯 ¿Qué hace Pre-Cursor?
 
@@ -131,10 +134,16 @@ pre-cursor supervisor test-supervisor -p --daemon --interval 180
 pre-cursor supervisor validate-tests -p
 pre-cursor supervisor validate-tests -p --cleanup
 
-# Sistema de triggers
+# Sistema de triggers y monitoreo automático
 pre-cursor supervisor trigger-monitor -p --daemon --interval 300
 pre-cursor supervisor create-trigger -p
 pre-cursor supervisor trigger-status -p
+
+# Integración bidireccional completa
+pre-cursor supervisor start-bidirectional -p
+pre-cursor supervisor instructions -p
+pre-cursor supervisor apply -p
+pre-cursor supervisor metrics -p
 ```
 
 #### Crear Proyectos
@@ -253,6 +262,9 @@ pre_cursor/
 - **Integración Bidireccional**: Sistema completo de supervisión continua
 - **Daemon en Background**: Ejecución continua sin intervención del usuario
 - **Sistema de Triggers**: Activación externa y monitoreo automático
+- **AutoExecutor**: Correcciones directas del sistema de archivos
+- **Cursor Agent CLI**: Ejecución de prompts inteligentes
+- **Feedback Processor**: Procesamiento automático de resultados
 
 ### 🔄 En Desarrollo
 - **Tests Automáticos**: Suite de tests para el generador
@@ -341,10 +353,8 @@ visualización de datos'."
 - **`docs/METODOLOGIA_DESARROLLO.md`** - Metodología establecida
 
 ### Guías Disponibles
-- **`docs/guides/QUICKSTART.md`** - Inicio rápido
-- **`docs/guides/GUIA_PASO_A_PASO.md`** - Guía detallada
-- **`docs/guides/GUIA_SUPER_SIMPLE.md`** - Para principiantes
-- **`docs/guides/README_PRINCIPIANTES.md`** - Introducción básica
+- **`docs/guides/QUICKSTART.md`** - Inicio rápido y uso básico
+- **`docs/guides/GUIA_PASO_A_PASO.md`** - Guía detallada paso a paso
 
 ### Archivos de Configuración
 - **`config/`** - Archivos de configuración del proyecto
