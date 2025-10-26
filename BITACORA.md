@@ -263,3 +263,40 @@
 
 ---
 
+### 2025-01-XX (Integración openFrameworks)
+- **INTEGRACIÓN CON OPENFRAMEWORKS IMPLEMENTADA**:
+  - `OFProjectGenerator`: Generador de proyectos openFrameworks
+  - Integración con el ProjectGenerator oficial de openFrameworks
+  - Soporte para addons de openFrameworks
+  - Modo interactivo para selección de addons
+  - Listado automático de addons disponibles
+- **COMANDO NUEVO**:
+  - `create-of`: Crear proyectos openFrameworks
+    - `--of-path`: Especificar ruta de openFrameworks
+    - `--output-dir` / `-o`: Directorio de salida
+    - `--addons` / `-a`: Addons a incluir (múltiples)
+    - `--interactive` / `-i`: Modo interactivo
+    - `--list-addons`: Listar addons disponibles
+- **FUNCIONALIDADES**:
+  - Detección automática de la instalación de openFrameworks
+  - Validación de disponibilidad del ProjectGenerator
+  - Generación de proyectos con addons personalizados
+  - Soporte para múltiples addons
+  - Interfaz interactiva amigable con Rich
+- **ARCHIVOS CREADOS**:
+  - `src/pre_cursor/openframeworks_generator.py`: Generador de proyectos OF
+- **ARCHIVOS MODIFICADOS**:
+  - `src/pre_cursor/cli.py`: Comando `create-of` añadido
+  - `README.md`: Documentación del nuevo comando
+  - `BITACORA.md`: Esta entrada
+- **UBICACIÓN POR DEFECTO**:
+  - `/Users/joseassizalcarazbaxter/Documents/UNA/POSGRADO/2025_1/PyA/of_v0.12.1_osx_release`
+  - Configurable mediante `--of-path` o variable de entorno
+- **RESULTADOS OBTENIDOS**:
+  - 15 addons disponibles detectados automáticamente
+  - Comando funcionando correctamente
+  - Integración exitosa con ProjectGenerator oficial
+- **FASE COMPLETADA**: Integración openFrameworks implementada y probada
+
+---
+

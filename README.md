@@ -159,6 +159,21 @@ pre-cursor create mi-proyecto --interactive
 
 # En ruta específica
 pre-cursor create mi-proyecto --path /ruta/personalizada
+
+# Crear proyecto openFrameworks
+pre-cursor create-of mi-proyecto-of
+
+# Crear proyecto openFrameworks con addons
+pre-cursor create-of mi-proyecto-of -a ofxGui -a ofxOsc
+
+# Modo interactivo para openFrameworks
+pre-cursor create-of -i
+
+# Listar addons disponibles
+pre-cursor create-of --list-addons
+
+# Especificar ruta de openFrameworks
+pre-cursor create-of mi-proyecto-of --of-path /ruta/openframeworks
 ```
 
 #### Plantillas y Configuración
@@ -257,6 +272,7 @@ pre_cursor/
 - **Validación**: Validación robusta de parámetros de entrada
 - **Configuración**: Soporte para archivos de configuración JSON/YAML
 - **TD_MCP Integration**: Soporte específico para proyectos TD_MCP
+- **openFrameworks Integration**: Integración con el ProjectGenerator oficial de openFrameworks
 - **Supervisor Automático**: Detección y corrección automática de problemas
 - **Test Supervisor**: Validación y limpieza de tests con LLM
 - **Integración Bidireccional**: Sistema completo de supervisión continua
@@ -312,7 +328,8 @@ python3 init_project.py ProyectoTest
 8. **C++ Project**: Proyectos en C++
 9. **Node.js Project**: Proyectos en Node.js
 10. **TD_MCP Project**: Proyectos MCP para TouchDesigner
-11. **Otro**: Configuración personalizada
+11. **openFrameworks Project**: Proyectos multimedia interactivos con C++
+12. **Otro**: Configuración personalizada
 
 ---
 

@@ -178,6 +178,78 @@ def create(ctx, project_name, description, path, output_dir, project_type, inter
             _open_in_cursor(project_path)
 
 @cli.command()
+@click.argument('project_name', required=False)
+@click.option('--of-path', type=click.Path(exists=True), help='Ruta a la instalación de openFrameworks')
+@click.option('--output-dir', '-o', type=click.Path(), help='Directorio de salida')
+@click.option('--addons', '-a', multiple=True, help='Addons de openFrameworks a incluir (puede repetirse)')
+@click.option('--interactive', '-i', is_flag=True, help='Modo interactivo')
+@click.option('--list-addons', is_flag=True, help='Listar addons disponibles')
+def create_of(project_name, of_path, output_dir, addons, interactive, list_addons):
+    """
+    🎨 Crear un nuevo proyecto openFrameworks
+    
+    Genera un proyecto usando el ProjectGenerator oficial de openFrameworks.
+    
+    Ejemplos:
+    pre-cursor create-of mi-proyecto
+    pre-cursor create-of mi-proyecto -o ~/projects/of-projects
+    pre-cursor create-of mi-proyecto -a ofxGui -a ofxOsc
+    pre-cursor create-of --list-addons
+    pre-cursor create-of -i  # Modo interactivo
+    """
+    try:
+        from .openframeworks_generator import OFProjectGenerator
+        
+        # Inicializar generador
+        of_generator = OFProjectGenerator(of_path=Path(of_path) if of_path else None)
+        
+        # Listar addons si se solicita
+        if list_addons:
+            addons_list = of_generator.list_addons()
+            if addons_list:
+                console.print(f"\n📋 Addons disponibles ({len(addons_list)}):")
+                for addon in addons_list:
+                    console.print(f"   • [cyan]{addon}[/cyan]")
+            else:
+                console.print("⚠️  No se encontraron addons", style="yellow")
+            return
+        
+        # Verificar si está disponible
+        if not of_generator.check_available():
+            console.print("❌ ProjectGenerator no está disponible", style="red")
+            console.print(f"   Buscado en: {of_generator.pg_path}", style="yellow")
+            console.print("\n💡 Opciones:", style="blue")
+            console.print("   1. Especifica la ruta con: --of-path")
+            console.print("   2. Exporta OPENFRAMEWORKS_PATH en tu shell")
+            console.print(f"   3. Edita la ruta por defecto en: {of_generator.DEFAULT_OF_PATH}")
+            return
+        
+        # Modo interactivo
+        if interactive or not project_name:
+            success = of_generator.create_project_interactive()
+            return
+        
+        # Modo directo
+        addons_list = list(addons) if addons else None
+        success = of_generator.generate_project(
+            project_name=project_name,
+            output_dir=Path(output_dir) if output_dir else None,
+            addons=addons_list
+        )
+        
+        if not success:
+            console.print("❌ Error al crear proyecto openFrameworks", style="red")
+            sys.exit(1)
+        
+    except ImportError as e:
+        console.print(f"❌ Error importando generador: {e}", style="red")
+        console.print("💡 Verifica que los módulos estén instalados correctamente", style="yellow")
+        sys.exit(1)
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+        sys.exit(1)
+
+@cli.command()
 @click.option('--type', '-t', 'project_type',
               type=click.Choice([
                   'Python Library', 'Python CLI Tool', 'Python Web App (Flask)',
