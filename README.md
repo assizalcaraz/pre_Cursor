@@ -191,6 +191,23 @@ pre-cursor generate mi_config.json
 pre-cursor generate config.yaml --dry-run
 ```
 
+#### Gestión de Documentación
+```bash
+# Procesar documentación temporal
+pre-cursor docs process -p                    # Procesar directorio actual
+pre-cursor docs process -p --dry-run          # Simular sin cambios
+pre-cursor docs process /path/to/project --verbose
+
+# Reorganizar documentación
+pre-cursor docs organize -p                   # Reorganizar directorio actual
+
+# Gestión de cron jobs
+pre-cursor docs cron status -p                # Verificar estado
+pre-cursor docs cron install -p               # Instalar (cada 6 horas)
+pre-cursor docs cron install -p --interval 12 # Instalar (cada 12 horas)
+pre-cursor docs cron remove -p                # Eliminar
+```
+
 #### Información y Ayuda
 ```bash
 # Listar tipos disponibles
@@ -204,6 +221,7 @@ pre-cursor --help
 
 # Ayuda de comando específico
 pre-cursor create --help
+pre-cursor docs --help
 ```
 
 ### 🔧 Configurar Autocompletado
@@ -281,6 +299,8 @@ pre_cursor/
 - **AutoExecutor**: Correcciones directas del sistema de archivos
 - **Cursor Agent CLI**: Ejecución de prompts inteligentes
 - **Feedback Processor**: Procesamiento automático de resultados
+- **Gestión de Documentación**: Procesamiento y reorganización de documentación
+- **Cron Jobs para Docs**: Automatización de procesamiento de documentación
 
 ### 🔄 En Desarrollo
 - **Tests Automáticos**: Suite de tests para el generador

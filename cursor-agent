@@ -8,11 +8,12 @@ show_help() {
     echo "Usage: cursor-agent [OPTIONS] COMMAND [ARGS]..."
     echo ""
     echo "Commands:"
-    echo "  analyze_test    Analyze test files using LLM"
-    echo "  fix_code        Fix code issues using LLM"
-    echo "  refactor        Refactor code using LLM"
-    echo "  --version       Show version"
-    echo "  --help          Show this help"
+    echo "  analyze_test         Analyze test files using LLM"
+    echo "  fix_code             Fix code issues using LLM"
+    echo "  refactor             Refactor code using LLM"
+    echo "  analyze_documentation Analyze documentation files using LLM"
+    echo "  --version            Show version"
+    echo "  --help               Show this help"
     echo ""
     echo "This wrapper uses agent-cli under the hood for AI-powered operations."
 }
@@ -56,6 +57,26 @@ refactor() {
     agent-cli chat "Please refactor this code to improve its structure and maintainability: $(cat "$file_path")"
 }
 
+# Función para analizar documentación
+analyze_documentation() {
+    local file_path="$1"
+    if [ -z "$file_path" ]; then
+        echo "Error: File path required for analyze_documentation"
+        exit 1
+    fi
+    
+    if [ ! -f "$file_path" ]; then
+        echo "Error: File not found: $file_path"
+        exit 1
+    fi
+    
+    # Leer el prompt del archivo (el archivo contiene el prompt completo)
+    local prompt=$(cat "$file_path")
+    
+    # Enviar a agent-cli
+    agent-cli chat "$prompt"
+}
+
 # Procesar argumentos
 case "$1" in
     --version)
@@ -74,6 +95,9 @@ case "$1" in
         ;;
     refactor)
         refactor "$2"
+        ;;
+    analyze_documentation)
+        analyze_documentation "$2"
         ;;
     *)
         echo "Unknown command: $1"

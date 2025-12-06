@@ -32,6 +32,7 @@ from .cursor_supervisor import CursorSupervisor
 from .cursor_instruction_generator import CursorInstructionGenerator
 from .cursor_cli_interface import CursorCLIInterface
 from .feedback_processor import FeedbackProcessor
+from .docs_manager import DocumentationProcessor, CronManager
 
 console = Console()
 
@@ -1343,6 +1344,278 @@ def metrics(project_path, path):
     except Exception as e:
         console.print(f"❌ Error: {e}", style="red")
 
+@cli.group()
+def docs():
+    """
+    📚 Gestión de Documentación
+    
+    Comandos para gestionar documentación de proyectos:
+    - Procesamiento de documentación temporal
+    - Reorganización de documentación
+    - Gestión de cron jobs
+    """
+    pass
+
+@docs.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+@click.option('--dry-run', is_flag=True, help='Simular sin hacer cambios')
+@click.option('--verbose', '-v', is_flag=True, help='Modo verbose')
+@click.option('--no-llm', is_flag=True, help='Deshabilitar análisis semántico con LLM (usar solo evaluación básica)')
+def process(project_path, path, dry_run, verbose, no_llm):
+    """
+    🔄 Procesar documentación temporal
+    
+    Analiza documentos en docs/temp/ y los mueve a documentación oficial
+    detectando redundancia e incompatibilidad.
+    
+    Ejemplos:
+    pre-cursor docs process -p              # Procesar directorio actual
+    pre-cursor docs process -p --dry-run    # Simular sin cambios
+    pre-cursor docs process /path/to/project --verbose
+    """
+    try:
+        # Determinar path del proyecto con mejor UX
+        if path:
+            detected_path = os.getcwd()
+            
+            # Verificar si estamos en un subdirectorio de docs
+            if Path(detected_path).name in ['temp', 'legacy', 'juce'] or Path(detected_path).name == 'docs':
+                # Estamos en un subdirectorio, mostrar advertencia y confirmar
+                console.print(f"\n⚠️  Detectado subdirectorio: [bold yellow]{detected_path}[/bold yellow]")
+                console.print(f"📍 Path del proyecto detectado: [bold blue]{Path(detected_path).parent.parent if Path(detected_path).name in ['temp', 'legacy', 'juce'] else Path(detected_path).parent}[/bold blue]")
+                
+                if not Confirm.ask("¿Usar este path del proyecto?", default=True):
+                    project_path = Prompt.ask("Ingresa el path del proyecto", default=str(Path(detected_path).parent.parent))
+                else:
+                    project_path = str(Path(detected_path).parent.parent if Path(detected_path).name in ['temp', 'legacy', 'juce'] else Path(detected_path).parent)
+            else:
+                # Verificar si existe docs/temp en el directorio actual
+                docs_temp = Path(detected_path) / 'docs' / 'temp'
+                if not docs_temp.exists():
+                    console.print(f"\n⚠️  No se encontró [bold yellow]docs/temp/[/bold yellow] en: [bold blue]{detected_path}[/bold blue]")
+                    console.print(f"📍 Path detectado: [bold blue]{detected_path}[/bold blue]")
+                    
+                    if not Confirm.ask("¿Es este el path correcto del proyecto?", default=True):
+                        project_path = Prompt.ask("Ingresa el path del proyecto")
+                    else:
+                        project_path = detected_path
+                else:
+                    project_path = detected_path
+                    console.print(f"✅ Path del proyecto: [bold blue]{project_path}[/bold blue]")
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p", style="red")
+            console.print("💡 Ejemplo: pre-cursor docs process -p", style="yellow")
+            return
+        else:
+            # Path explícito proporcionado
+            if not Path(project_path).exists():
+                console.print(f"❌ Error: El path no existe: [bold red]{project_path}[/bold red]", style="red")
+                return
+            console.print(f"✅ Path del proyecto: [bold blue]{project_path}[/bold blue]")
+        
+        # Verificar estructura de documentación
+        docs_dir = Path(project_path) / 'docs'
+        temp_dir = docs_dir / 'temp'
+        
+        if not docs_dir.exists():
+            console.print(f"⚠️  No se encontró directorio [bold yellow]docs/[/bold yellow]", style="yellow")
+            if not Confirm.ask("¿Crear estructura de documentación?", default=True):
+                console.print("❌ Operación cancelada", style="red")
+                return
+            docs_dir.mkdir(parents=True, exist_ok=True)
+            temp_dir.mkdir(parents=True, exist_ok=True)
+            console.print("✅ Estructura de documentación creada", style="green")
+        
+        if not temp_dir.exists():
+            console.print(f"⚠️  No se encontró directorio [bold yellow]docs/temp/[/bold yellow]", style="yellow")
+            if Confirm.ask("¿Crear directorio docs/temp/?", default=True):
+                temp_dir.mkdir(parents=True, exist_ok=True)
+                console.print("✅ Directorio docs/temp/ creado", style="green")
+        
+        console.print(f"\n📚 Procesando documentación de: [bold blue]{project_path}[/bold blue]")
+        
+        if no_llm:
+            console.print("⚠️  Análisis semántico con LLM deshabilitado", style="yellow")
+        
+        processor = DocumentationProcessor(
+            project_root=project_path,
+            dry_run=dry_run,
+            verbose=verbose,
+            use_llm=not no_llm
+        )
+        
+        if processor.use_llm:
+            console.print("🤖 Análisis semántico con LLM: [bold green]Habilitado[/bold green]")
+        else:
+            console.print("📊 Análisis semántico con LLM: [bold yellow]Deshabilitado[/bold yellow]")
+        
+        processor.process_temp_documents()
+        stats = processor.generate_report()
+        
+        console.print(f"\n✅ Procesamiento completado:")
+        console.print(f"  📄 Analizados: {stats['analyzed']}")
+        console.print(f"  ➡️  Movidos: {stats['moved']}")
+        console.print(f"  ⏭️  Omitidos: {stats.get('skipped', 0)}")
+        if stats.get('llm_evaluated', 0) > 0:
+            console.print(f"  🤖 Evaluados con LLM: {stats['llm_evaluated']}")
+        console.print(f"  ⚠️  Errores: {stats['errors']}")
+        
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+        if verbose:
+            import traceback
+            console.print(traceback.format_exc())
+
+@docs.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def organize(project_path, path):
+    """
+    📁 Reorganizar documentación
+    
+    Reorganiza documentación existente en estructura legacy/, juce/, temp/
+    
+    Ejemplos:
+    pre-cursor docs organize -p              # Reorganizar directorio actual
+    pre-cursor docs organize /path/to/project
+    """
+    try:
+        if path:
+            project_path = os.getcwd()
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p", style="red")
+            return
+        
+        console.print(f"\n📁 Reorganizando documentación de: [bold blue]{project_path}[/bold blue]")
+        
+        # Esta funcionalidad puede implementarse más adelante
+        console.print("⚠️  Funcionalidad en desarrollo", style="yellow")
+        console.print("Por ahora, usa el script scripts/reorganize_docs.py manualmente")
+        
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@docs.group()
+def cron():
+    """
+    ⏰ Gestión de Cron Jobs
+    
+    Gestiona cron jobs para procesamiento automático de documentación.
+    """
+    pass
+
+@cron.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def status(project_path, path):
+    """
+    📋 Verificar estado del cron job
+    
+    Ejemplos:
+    pre-cursor docs cron status -p
+    pre-cursor docs cron status /path/to/project
+    """
+    try:
+        if path:
+            project_path = os.getcwd()
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p", style="red")
+            return
+        
+        manager = CronManager(project_path)
+        status_info = manager.check_status()
+        
+        if status_info.get('installed'):
+            console.print(f"\n✅ Cron job instalado", style="green")
+            console.print(f"  Identificador: {status_info.get('identifier')}")
+            console.print(f"  Línea: {status_info.get('line')}")
+        else:
+            console.print(f"\n⚠️  Cron job no está instalado", style="yellow")
+            console.print(f"  Para instalar: pre-cursor docs cron install -p")
+            
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@cron.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+@click.option('--interval', '-i', type=int, default=6, help='Intervalo en horas (default: 6)')
+def install(project_path, path, interval):
+    """
+    🔧 Instalar cron job
+    
+    Instala un cron job que procesa documentación automáticamente cada N horas.
+    
+    Ejemplos:
+    pre-cursor docs cron install -p              # Cada 6 horas (default)
+    pre-cursor docs cron install -p --interval 12  # Cada 12 horas
+    """
+    try:
+        if path:
+            project_path = os.getcwd()
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p", style="red")
+            return
+        
+        manager = CronManager(project_path)
+        
+        # Verificar si ya existe
+        status_info = manager.check_status()
+        if status_info.get('installed'):
+            console.print(f"\n⚠️  Cron job ya está instalado", style="yellow")
+            console.print(f"  Para reinstalar, primero elimínalo: pre-cursor docs cron remove -p")
+            return
+        
+        console.print(f"\n🔧 Instalando cron job...")
+        console.print(f"  Intervalo: cada {interval} horas")
+        
+        if manager.install(interval_hours=interval):
+            console.print(f"✅ Cron job instalado exitosamente", style="green")
+            console.print(f"  Se ejecutará cada {interval} horas")
+            console.print(f"  Logs: {manager.cron_log}")
+        else:
+            console.print(f"❌ Error al instalar cron job", style="red")
+            
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
+@cron.command()
+@click.argument('project_path', type=click.Path(exists=True), required=False)
+@click.option('--path', '-p', is_flag=True, help='Usar directorio actual como path del proyecto')
+def remove(project_path, path):
+    """
+    🗑️ Eliminar cron job
+    
+    Ejemplos:
+    pre-cursor docs cron remove -p
+    pre-cursor docs cron remove /path/to/project
+    """
+    try:
+        if path:
+            project_path = os.getcwd()
+        elif not project_path:
+            console.print("❌ Error: Debes especificar el path del proyecto o usar -p", style="red")
+            return
+        
+        manager = CronManager(project_path)
+        
+        # Verificar si existe
+        status_info = manager.check_status()
+        if not status_info.get('installed'):
+            console.print(f"\n⚠️  Cron job no está instalado", style="yellow")
+            return
+        
+        console.print(f"\n🗑️  Eliminando cron job...")
+        
+        if manager.remove():
+            console.print(f"✅ Cron job eliminado exitosamente", style="green")
+        else:
+            console.print(f"❌ Error al eliminar cron job", style="red")
+            
+    except Exception as e:
+        console.print(f"❌ Error: {e}", style="red")
+
 @cli.command()
 @click.option('--examples', is_flag=True, help='Mostrar ejemplos de uso')
 def info(examples):
@@ -1374,6 +1647,9 @@ def info(examples):
         console.print("• pre-cursor supervisor start -p  # Usar directorio actual")
         console.print("• pre-cursor supervisor status /path/to/project")
         console.print("• pre-cursor supervisor config -p --interval 600")
+        console.print("• pre-cursor docs process -p  # Procesar documentación temporal")
+        console.print("• pre-cursor docs cron install -p  # Instalar cron job")
+        console.print("• pre-cursor docs cron status -p  # Verificar cron job")
 
 def _validate_project_name(name):
     """Validar nombre del proyecto."""
